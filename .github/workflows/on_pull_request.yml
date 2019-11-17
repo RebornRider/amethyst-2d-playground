@@ -1,4 +1,4 @@
-on: push
+on: pull_request
 
 jobs:
   check-on-ubunutu:
@@ -8,11 +8,11 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install Dependecies
         run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - name: Cargo Fmt
@@ -28,11 +28,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - name: Cargo Clippy
@@ -44,11 +44,11 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install Dependecies
         run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - name: Build release
@@ -68,11 +68,11 @@ jobs:
     runs-on: macOS-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - name: Build release
@@ -92,11 +92,11 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - name: Build release
