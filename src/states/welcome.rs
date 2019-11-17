@@ -1,15 +1,15 @@
-use amethyst::{ecs::prelude::Entity,
-               input::{is_close_requested,
-                       is_key_down,
-                       is_mouse_button_down},
-               prelude::*,
-               ui::UiCreator,
-               winit::{MouseButton,
-                       VirtualKeyCode}};
+use amethyst::{
+    ecs::prelude::Entity,
+    input::{is_close_requested, is_key_down, is_mouse_button_down},
+    prelude::*,
+    ui::UiCreator,
+    winit::{MouseButton, VirtualKeyCode},
+};
 
-use crate::{audio::initialise_audio,
-            states::{util::delete_hierarchy,
-                     GameplayState}};
+use crate::{
+    audio::initialise_audio,
+    states::{util::delete_hierarchy, GameplayState},
+};
 
 #[derive(Default, Debug)]
 pub struct WelcomeScreen {

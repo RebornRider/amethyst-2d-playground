@@ -1,17 +1,12 @@
-use amethyst::{ecs::prelude::Entity,
-               input::{is_close_requested,
-                       is_key_down},
-               prelude::*,
-               ui::{UiCreator,
-                    UiEvent,
-                    UiEventType,
-                    UiFinder},
-               winit::VirtualKeyCode};
+use amethyst::{
+    ecs::prelude::Entity,
+    input::{is_close_requested, is_key_down},
+    prelude::*,
+    ui::{UiCreator, UiEvent, UiEventType, UiFinder},
+    winit::VirtualKeyCode,
+};
 
-use crate::states::{util::delete_hierarchy,
-                    CreditsScreen,
-                    Pong,
-                    WelcomeScreen};
+use crate::states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen};
 
 const BUTTON_START: &str = "start";
 const BUTTON_LOAD: &str = "load";
@@ -20,9 +15,9 @@ const BUTTON_CREDITS: &str = "credits";
 
 #[derive(Default, Debug)]
 pub struct MainMenu {
-    ui_root:        Option<Entity>,
-    button_start:   Option<Entity>,
-    button_load:    Option<Entity>,
+    ui_root: Option<Entity>,
+    button_start: Option<Entity>,
+    button_load: Option<Entity>,
     button_options: Option<Entity>,
     button_credits: Option<Entity>,
 }
@@ -60,8 +55,10 @@ impl SimpleState for MainMenu {
                     Trans::None
                 }
             }
-            StateEvent::Ui(UiEvent { event_type: UiEventType::Click,
-                                     target, }) => {
+            StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Click,
+                target,
+            }) => {
                 if Some(target) == self.button_credits {
                     log::info!("[Trans::Switch] Switching to CreditsScreen!");
                     return Trans::Switch(Box::new(CreditsScreen::default()));
@@ -77,24 +74,44 @@ impl SimpleState for MainMenu {
                 Trans::None
             }
             StateEvent::Input(..)
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::ClickStart,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::ClickStop,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::HoverStart,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::HoverStop,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::Dragging { .. },
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::Dropped { .. },
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::ValueChange,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::ValueCommit,
-                                     .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::Focus, .. })
-            | StateEvent::Ui(UiEvent { event_type: UiEventType::Blur, .. }) => Trans::None,
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::ClickStart,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::ClickStop,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::HoverStart,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::HoverStop,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Dragging { .. },
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Dropped { .. },
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::ValueChange,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::ValueCommit,
+                ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Focus, ..
+            })
+            | StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Blur, ..
+            }) => Trans::None,
         }
     }
 
@@ -104,11 +121,11 @@ impl SimpleState for MainMenu {
 
         if self.button_start.is_none() || self.button_load.is_none() || self.button_options.is_none() || self.button_credits.is_none() {
             world.exec(|ui_finder: UiFinder<'_>| {
-                     self.button_start = ui_finder.find(BUTTON_START);
-                     self.button_load = ui_finder.find(BUTTON_LOAD);
-                     self.button_options = ui_finder.find(BUTTON_OPTIONS);
-                     self.button_credits = ui_finder.find(BUTTON_CREDITS);
-                 });
+                self.button_start = ui_finder.find(BUTTON_START);
+                self.button_load = ui_finder.find(BUTTON_LOAD);
+                self.button_options = ui_finder.find(BUTTON_OPTIONS);
+                self.button_credits = ui_finder.find(BUTTON_CREDITS);
+            });
         }
 
         Trans::None

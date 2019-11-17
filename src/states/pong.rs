@@ -1,48 +1,29 @@
-use crate::{states::{delete_hierarchy,
-                     GameplayState,
-                     PauseMenuState},
-            systems::{PongBundle,
-                      ScoreText},
-            Ball,
-            Paddle,
-            Side,
-            ARENA_HEIGHT,
-            ARENA_WIDTH};
-use amethyst::{assets::{AssetStorage,
-                        Handle,
-                        Loader},
-               core::{bundle::SystemBundle,
-                      timing::Time,
-                      transform::Transform,
-                      Parent},
-               ecs::{prelude::{Entity,
-                               World,
-                               WorldExt},
-                     Dispatcher,
-                     DispatcherBuilder},
-               input::{is_close_requested,
-                       is_key_down},
-               prelude::*,
-               renderer::{Camera,
-                          ImageFormat,
-                          SpriteRender,
-                          SpriteSheet,
-                          SpriteSheetFormat,
-                          Texture},
-               ui::{Anchor,
-                    TtfFormat,
-                    UiCreator,
-                    UiText,
-                    UiTransform},
-               winit::VirtualKeyCode};
+use crate::{
+    states::{delete_hierarchy, GameplayState, PauseMenuState},
+    systems::{PongBundle, ScoreText},
+    Ball, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
+};
+use amethyst::{
+    assets::{AssetStorage, Handle, Loader},
+    core::{bundle::SystemBundle, timing::Time, transform::Transform, Parent},
+    ecs::{
+        prelude::{Entity, World, WorldExt},
+        Dispatcher, DispatcherBuilder,
+    },
+    input::{is_close_requested, is_key_down},
+    prelude::*,
+    renderer::{Camera, ImageFormat, SpriteRender, SpriteSheet, SpriteSheetFormat, Texture},
+    ui::{Anchor, TtfFormat, UiCreator, UiText, UiTransform},
+    winit::VirtualKeyCode,
+};
 
 #[derive(Default)]
 pub struct Pong<'a, 'b> {
-    ball_spawn_timer:    Option<f32>,
+    ball_spawn_timer: Option<f32>,
     sprite_sheet_handle: Option<Handle<SpriteSheet>>,
-    dispatcher:          Option<Dispatcher<'a, 'b>>,
-    root_entity:         Option<Entity>,
-    ui_root:             Option<Entity>,
+    dispatcher: Option<Dispatcher<'a, 'b>>,
+    root_entity: Option<Entity>,
+    ui_root: Option<Entity>,
 }
 
 impl<'a, 'b> SimpleState for Pong<'a, 'b> {
@@ -91,9 +72,13 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
         self.ui_root = None;
     }
 
-    fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) { *data.world.write_resource::<GameplayState>() = GameplayState::Paused; }
+    fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        *data.world.write_resource::<GameplayState>() = GameplayState::Paused;
+    }
 
-    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) { *data.world.write_resource::<GameplayState>() = GameplayState::Running; }
+    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        *data.world.write_resource::<GameplayState>() = GameplayState::Running;
+    }
 
     fn handle_event(&mut self, _: StateData<'_, GameData<'_, '_>>, event: StateEvent) -> SimpleTrans {
         match event {
@@ -159,10 +144,12 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
 
     let loader = world.read_resource::<Loader>();
     let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load("texture/pong_spritesheet.ron",    // Here we load the associated ron file
-                SpriteSheetFormat(texture_handle), // We pass it the texture we want it to use
-                (),
-                &sprite_sheet_store)
+    loader.load(
+        "texture/pong_spritesheet.ron",    // Here we load the associated ron file
+        SpriteSheetFormat(texture_handle), // We pass it the texture we want it to use
+        (),
+        &sprite_sheet_store,
+    )
 }
 
 /// Initialise the camera.
@@ -171,18 +158,17 @@ fn initialise_camera(world: &mut World, parent: Entity) {
     let mut transform = Transform::default();
     transform.set_translation_xyz(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5, 1.0);
 
-    world.create_entity()
-         .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
-         .with(Parent { entity: parent })
-         .with(transform)
-         .build();
+    world
+        .create_entity()
+        .with(Camera::standard_2d(ARENA_WIDTH, ARENA_HEIGHT))
+        .with(Parent { entity: parent })
+        .with(transform)
+        .build();
 }
 
 /// Initialises one paddle on the left, and one paddle on the right.
 fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
-    use crate::{PADDLE_HEIGHT,
-                PADDLE_VELOCITY,
-                PADDLE_WIDTH};
+    use crate::{PADDLE_HEIGHT, PADDLE_VELOCITY, PADDLE_WIDTH};
 
     let mut left_transform = Transform::default();
     let mut right_transform = Transform::default();
@@ -199,33 +185,37 @@ fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Ha
     };
 
     // Create a left plank entity.
-    world.create_entity()
-         .with(sprite_render.clone())
-         .with(Paddle { velocity: PADDLE_VELOCITY,
-                        side:     Side::Left,
-                        width:    PADDLE_WIDTH,
-                        height:   PADDLE_HEIGHT, })
-         .with(left_transform)
-         .with(Parent { entity: parent })
-         .build();
+    world
+        .create_entity()
+        .with(sprite_render.clone())
+        .with(Paddle {
+            velocity: PADDLE_VELOCITY,
+            side: Side::Left,
+            width: PADDLE_WIDTH,
+            height: PADDLE_HEIGHT,
+        })
+        .with(left_transform)
+        .with(Parent { entity: parent })
+        .build();
 
     // Create right plank entity.
-    world.create_entity()
-         .with(sprite_render)
-         .with(Paddle { velocity: PADDLE_VELOCITY,
-                        side:     Side::Right,
-                        width:    PADDLE_WIDTH,
-                        height:   PADDLE_HEIGHT, })
-         .with(right_transform)
-         .with(Parent { entity: parent })
-         .build();
+    world
+        .create_entity()
+        .with(sprite_render)
+        .with(Paddle {
+            velocity: PADDLE_VELOCITY,
+            side: Side::Right,
+            width: PADDLE_WIDTH,
+            height: PADDLE_HEIGHT,
+        })
+        .with(right_transform)
+        .with(Parent { entity: parent })
+        .build();
 }
 
 /// Initialises one ball in the middle-ish of the arena.
 fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
-    use crate::{BALL_RADIUS,
-                BALL_VELOCITY_X,
-                BALL_VELOCITY_Y};
+    use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
 
     // Create the translation.
     let mut local_transform = Transform::default();
@@ -237,13 +227,16 @@ fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handl
         sprite_number: 1, // ball is the second sprite on the sprite_sheet
     };
 
-    world.create_entity()
-         .with(sprite_render)
-         .with(Ball { radius:   BALL_RADIUS,
-                      velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y], })
-         .with(local_transform)
-         .with(Parent { entity: parent })
-         .build();
+    world
+        .create_entity()
+        .with(sprite_render)
+        .with(Ball {
+            radius: BALL_RADIUS,
+            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+        })
+        .with(local_transform)
+        .with(Parent { entity: parent })
+        .build();
 }
 
 fn initialise_score(world: &mut World, parent: Entity) {
@@ -254,22 +247,25 @@ fn initialise_score(world: &mut World, parent: Entity) {
 
     let fps_text_transform = UiTransform::new("FPS".to_string(), Anchor::TopLeft, Anchor::TopLeft, 0., 0., 1., 200., 50.);
 
-    let p1_score = world.create_entity()
-                        .with(p1_transform)
-                        .with(UiText::new(font.clone(), "0".to_string(), [1.0, 1.0, 1.0, 1.0], 50.))
-                        .with(Parent { entity: parent })
-                        .build();
+    let p1_score = world
+        .create_entity()
+        .with(p1_transform)
+        .with(UiText::new(font.clone(), "0".to_string(), [1.0, 1.0, 1.0, 1.0], 50.))
+        .with(Parent { entity: parent })
+        .build();
 
-    let p2_score = world.create_entity()
-                        .with(p2_transform)
-                        .with(UiText::new(font.clone(), "0".to_string(), [1.0, 1.0, 1.0, 1.0], 50.))
-                        .with(Parent { entity: parent })
-                        .build();
+    let p2_score = world
+        .create_entity()
+        .with(p2_transform)
+        .with(UiText::new(font.clone(), "0".to_string(), [1.0, 1.0, 1.0, 1.0], 50.))
+        .with(Parent { entity: parent })
+        .build();
 
-    let fps_display = world.create_entity()
-                           .with(fps_text_transform)
-                           .with(UiText::new(font, "0".to_string(), [1.0, 1.0, 1.0, 1.0], 24.))
-                           .with(Parent { entity: parent })
-                           .build();
+    let fps_display = world
+        .create_entity()
+        .with(fps_text_transform)
+        .with(UiText::new(font, "0".to_string(), [1.0, 1.0, 1.0, 1.0], 24.))
+        .with(Parent { entity: parent })
+        .build();
     world.insert(ScoreText { p1_score, p2_score, fps_display });
 }
