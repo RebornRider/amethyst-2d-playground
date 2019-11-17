@@ -74,7 +74,6 @@ jobs:
       - name: Cargo Clippy
         run: |
           source $HOME/.cargo/env
-          rustup component add clippy
           chmod +x run_clippy.sh
           ./run_clippy.sh
       - name: Build debug
