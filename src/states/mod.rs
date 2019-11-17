@@ -5,12 +5,7 @@ mod pong;
 mod util;
 mod welcome;
 
-pub use self::{credits::CreditsScreen,
-               menu::MainMenu,
-               pause::PauseMenuState,
-               pong::Pong,
-               util::delete_hierarchy,
-               welcome::WelcomeScreen};
+pub use self::{credits::CreditsScreen, menu::MainMenu, pause::PauseMenuState, pong::Pong, util::delete_hierarchy, welcome::WelcomeScreen};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameplayState {
@@ -19,5 +14,7 @@ pub enum GameplayState {
 }
 
 impl std::default::Default for GameplayState {
-    fn default() -> Self { Self::Paused }
+    fn default() -> Self {
+        Self::Paused
+    }
 }

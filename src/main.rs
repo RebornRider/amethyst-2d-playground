@@ -3,30 +3,25 @@ mod audio;
 mod states;
 mod systems;
 
-use amethyst::{assets::HotReloadBundle,
-               audio::{AudioBundle,
-                       DjSystemDesc},
-               core::{frame_limiter::FrameRateLimitStrategy,
-                      transform::TransformBundle},
-               ecs::{Component,
-                     DenseVecStorage},
-               input::{InputBundle,
-                       StringBindings},
-               prelude::*,
-               renderer::{plugins::{RenderFlat2D,
-                                    RenderToWindow},
-                          types::DefaultBackend,
-                          RenderingBundle},
-               ui::{RenderUi,
-                    UiBundle},
-               utils::{application_root_dir,
-                       fps_counter::FpsCounterBundle}};
+use amethyst::{
+    assets::HotReloadBundle,
+    audio::{AudioBundle, DjSystemDesc},
+    core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
+    ecs::{Component, DenseVecStorage},
+    input::{InputBundle, StringBindings},
+    prelude::*,
+    renderer::{
+        plugins::{RenderFlat2D, RenderToWindow},
+        types::DefaultBackend,
+        RenderingBundle,
+    },
+    ui::{RenderUi, UiBundle},
+    utils::{application_root_dir, fps_counter::FpsCounterBundle},
+};
 
-use crate::{audio::Music,
-            systems::UiEventHandlerSystemDesc};
+use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 extern crate dunce;
-use std::{path,
-          time::Duration};
+use std::{path, time::Duration};
 
 const ARENA_HEIGHT: f32 = 90.0;
 const ARENA_WIDTH: f32 = 160.0;
@@ -38,8 +33,10 @@ const BALL_VELOCITY_X: f32 = 75.0;
 const BALL_VELOCITY_Y: f32 = 50.0;
 const BALL_RADIUS: f32 = 2.0;
 
-const AUDIO_MUSIC: &[&str] = &["audio/Computer_Music_All-Stars_-_Wheres_My_Jetpack.ogg",
-                               "audio/Computer_Music_All-Stars_-_Albatross_v2.ogg"];
+const AUDIO_MUSIC: &[&str] = &[
+    "audio/Computer_Music_All-Stars_-_Wheres_My_Jetpack.ogg",
+    "audio/Computer_Music_All-Stars_-_Albatross_v2.ogg",
+];
 const AUDIO_BOUNCE: &str = "audio/bounce.ogg";
 const AUDIO_SCORE: &str = "audio/score.ogg";
 
@@ -60,8 +57,7 @@ fn main() -> amethyst::Result<()> {
 
     let assets_dir = app_root.join("resources/");
 
-    let game_data =
-        GameDataBuilder::default()
+    let game_data = GameDataBuilder::default()
         // Add the transform bundle which handles tracking entity positions
         .with_bundle(TransformBundle::new())?
         .with_bundle(HotReloadBundle::default())?
@@ -84,8 +80,9 @@ fn main() -> amethyst::Result<()> {
                 .with_plugin(RenderUi::default()),
         )?;
 
-    let mut game = Application::build(assets_dir, states::WelcomeScreen::default())?.with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
-                                                                                    .build(game_data)?;
+    let mut game = Application::build(assets_dir, states::WelcomeScreen::default())?
+        .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
+        .build(game_data)?;
 
     game.run();
     Ok(())
@@ -93,7 +90,7 @@ fn main() -> amethyst::Result<()> {
 
 pub struct Ball {
     pub velocity: [f32; 2],
-    pub radius:   f32,
+    pub radius: f32,
 }
 
 impl Component for Ball {
@@ -108,17 +105,19 @@ pub enum Side {
 
 pub struct Paddle {
     pub velocity: f32,
-    pub side:     Side,
-    pub width:    f32,
-    pub height:   f32,
+    pub side: Side,
+    pub width: f32,
+    pub height: f32,
 }
 
 impl Paddle {
     pub const fn new(side: Side) -> Self {
-        Self { velocity: 1.0,
-               side,
-               width: 1.0,
-               height: 1.0 }
+        Self {
+            velocity: 1.0,
+            side,
+            width: 1.0,
+            height: 1.0,
+        }
     }
 }
 
@@ -128,12 +127,14 @@ impl Component for Paddle {
 
 #[derive(Default)]
 pub struct ScoreBoard {
-    score_left:  i32,
+    score_left: i32,
     score_right: i32,
 }
 
 impl ScoreBoard {
-    pub const fn new() -> Self { Self { score_left: 0, score_right: 0 } }
+    pub const fn new() -> Self {
+        Self { score_left: 0, score_right: 0 }
+    }
 }
 
 #[cfg(test)]
