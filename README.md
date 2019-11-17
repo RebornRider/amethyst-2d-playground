@@ -1,5 +1,5 @@
 <h1 align="center">
-  Amethyst Playground
+  Amethyst 2D Playground
 </h1>
 
-This project is my oersonal playground for games written in the amethyst engine.
+This project is my personal playground for games written in the amethyst engine.
