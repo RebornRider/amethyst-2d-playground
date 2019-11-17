@@ -28,7 +28,8 @@ jobs:
       - name: Run Tests
         uses: actions-rs/cargo@v1
           with:
-            command: test --all-targets
+            command: test
+            args: --all-targets
       - name: Build debug
         uses: actions-rs/cargo@v1
         with:
