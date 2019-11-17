@@ -1,14 +1,12 @@
-use amethyst::{ecs::prelude::Entity,
-               input::{is_close_requested,
-                       is_key_down,
-                       is_mouse_button_down},
-               prelude::*,
-               ui::UiCreator,
-               winit::{MouseButton,
-                       VirtualKeyCode}};
+use amethyst::{
+    ecs::prelude::Entity,
+    input::{is_close_requested, is_key_down, is_mouse_button_down},
+    prelude::*,
+    ui::UiCreator,
+    winit::{MouseButton, VirtualKeyCode},
+};
 
-use crate::states::{util::delete_hierarchy,
-                    MainMenu};
+use crate::states::{util::delete_hierarchy, MainMenu};
 
 // A simple 'Screen' State, only capable of loading/showing the prefab ui and registering simple
 // UI interactions (pressing escape or clicking anywhere).

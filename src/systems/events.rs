@@ -1,12 +1,13 @@
-use amethyst::{core::SystemDesc,
-               derive::SystemDesc,
-               ecs::{prelude::{System,
-                               SystemData,
-                               Write},
-                     World},
-               shrev::{EventChannel,
-                       ReaderId},
-               ui::UiEvent};
+use amethyst::{
+    core::SystemDesc,
+    derive::SystemDesc,
+    ecs::{
+        prelude::{System, SystemData, Write},
+        World,
+    },
+    shrev::{EventChannel, ReaderId},
+    ui::UiEvent,
+};
 
 /// This shows how to handle UI events. This is the same as in the 'ui' example.
 #[derive(SystemDesc)]
@@ -17,7 +18,9 @@ pub struct UiEventHandlerSystem {
 }
 
 impl UiEventHandlerSystem {
-    pub fn new(reader_id: ReaderId<UiEvent>) -> Self { Self { reader_id } }
+    pub fn new(reader_id: ReaderId<UiEvent>) -> Self {
+        Self { reader_id }
+    }
 }
 
 impl<'a> System<'a> for UiEventHandlerSystem {

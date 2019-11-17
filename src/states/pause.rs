@@ -1,14 +1,12 @@
-use amethyst::{ecs::Entity,
-               input::{is_close_requested,
-                       is_key_down},
-               prelude::*,
-               shrev::EventChannel,
-               ui::{UiCreator,
-                    UiEvent,
-                    UiEventType,
-                    UiFinder},
-               winit::VirtualKeyCode,
-               TransEvent};
+use amethyst::{
+    ecs::Entity,
+    input::{is_close_requested, is_key_down},
+    prelude::*,
+    shrev::EventChannel,
+    ui::{UiCreator, UiEvent, UiEventType, UiFinder},
+    winit::VirtualKeyCode,
+    TransEvent,
+};
 
 use crate::states::MainMenu;
 
@@ -67,8 +65,10 @@ impl<'a> SimpleState for PauseMenuState {
                     Trans::None
                 }
             }
-            StateEvent::Ui(UiEvent { event_type: UiEventType::Click,
-                                     target, }) => {
+            StateEvent::Ui(UiEvent {
+                event_type: UiEventType::Click,
+                target,
+            }) => {
                 if Some(target) == self.resume_button {
                     log::info!("Resuming Pong!");
                     Trans::Pop
@@ -100,10 +100,10 @@ impl<'a> SimpleState for PauseMenuState {
         // once deferred creation of the root ui entity finishes, look up buttons
         if self.resume_button.is_none() || self.exit_to_main_menu_button.is_none() || self.exit_button.is_none() {
             data.world.exec(|ui_finder: UiFinder<'_>| {
-                          self.resume_button = ui_finder.find(RESUME_BUTTON_ID);
-                          self.exit_to_main_menu_button = ui_finder.find(EXIT_TO_MAIN_MENU_BUTTON_ID);
-                          self.exit_button = ui_finder.find(EXIT_BUTTON_ID);
-                      });
+                self.resume_button = ui_finder.find(RESUME_BUTTON_ID);
+                self.exit_to_main_menu_button = ui_finder.find(EXIT_TO_MAIN_MENU_BUTTON_ID);
+                self.exit_button = ui_finder.find(EXIT_BUTTON_ID);
+            });
         }
         Trans::None
     }

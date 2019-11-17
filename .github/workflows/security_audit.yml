@@ -5,16 +5,23 @@ on:
       - 'Cargo.lock'
       - '**/Cargo.toml'
       - '**/Cargo.lock'
+  pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '**/Cargo.toml'
+      - '**/Cargo.lock'
+
 jobs:
   security_audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - uses: actions/checkout@v1

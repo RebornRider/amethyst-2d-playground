@@ -1,13 +1,13 @@
-use crate::{states,
-            systems::{BounceSystem,
-                      MoveBallsSystem,
-                      PaddleSystem,
-                      WinnerSystem}};
-use amethyst::{core::bundle::SystemBundle,
-               ecs::prelude::{DispatcherBuilder,
-                              World},
-               error::Error,
-               prelude::SystemExt};
+use crate::{
+    states,
+    systems::{BounceSystem, MoveBallsSystem, PaddleSystem, WinnerSystem},
+};
+use amethyst::{
+    core::bundle::SystemBundle,
+    ecs::prelude::{DispatcherBuilder, World},
+    error::Error,
+    prelude::SystemExt,
+};
 
 /// A bundle is a convenient way to initialise related resources, components and systems in a
 /// world. This bundle prepares the world for a game of pong.
