@@ -12,7 +12,7 @@ mapfile -t clippy_lints_to_warn < "clippy_lints_to_warn.txt"
 # even at the cost of failing the build
 mapfile -t clippy_lints_to_deny < "clippy_lints_to_deny.txt"
 
-clippy_args="cargo clippy --all-targets --tests -- "
+clippy_args="cargo clippy --all-targets -- "
 
 add_lints_to_clippy_args() {
   flag=$1

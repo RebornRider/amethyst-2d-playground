@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Install nightly toolchain with clippy and rustfmt
+      - name: Install toolchain with clippy and rustfmt
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
       - uses: actions/checkout@v1

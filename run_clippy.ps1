@@ -8,13 +8,11 @@ function Convert-WrrayToArgs ($arg, $list) {
     }
 }
 
-$toolchain = "nightly"
-
 $clippyArgs += Convert-WrrayToArgs -arg A -list (Get-Content ".\clippy_lints_to_allow.txt")
 $clippyArgs += Convert-WrrayToArgs -arg W -list (Get-Content ".\clippy_lints_to_warn.txt")
 $clippyArgs += Convert-WrrayToArgs -arg D -list (Get-Content ".\clippy_lints_to_deny.txt")
 
-$clippyCommand = "cargo +$toolchain clippy --all-targets --tests -- $clippyArgs"
+$clippyCommand = "cargo clippy --all-targets -- $clippyArgs"
 Write-Host "--- Running clippy!"
 Write-Host "Clippy rules: $clippyCommand"
 Invoke-Expression "cargo clean"

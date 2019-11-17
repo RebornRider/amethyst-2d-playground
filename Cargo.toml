@@ -11,16 +11,13 @@ keywords = ["game"]
 categories = ["games"]
 
 [dependencies]
-amethyst = { version = "0.*", features = ["nightly"] }
-log = { version = "0.4.*", features = ["serde"] }
-dunce = "1.*"
-serde = { version = "1.*", features = ["derive"] }
-amethyst_utils = { version = "0.8.*" }
-amethyst_derive = { version = "0.6.*" }
+amethyst = { version = "0" }
+log = { version = "0", features = ["serde"] }
+dunce = "1"
+serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["vulkan"]
 empty = ["amethyst/empty"]
 metal = ["amethyst/metal"]
 vulkan = ["amethyst/vulkan"]
-nightly = ["amethyst/nightly"]
