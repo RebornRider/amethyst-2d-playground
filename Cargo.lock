@@ -78,7 +78,6 @@ dependencies = [
  "amethyst_locale 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "amethyst_network 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "amethyst_rendy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_tiles 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "amethyst_ui 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "amethyst_utils 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "amethyst_window 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -100,8 +99,6 @@ name = "amethyst-starter-2d"
 version = "0.0.2"
 dependencies = [
  "amethyst 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_derive 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_utils 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dunce 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -308,29 +305,6 @@ dependencies = [
  "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
  "smallvec 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "static_assertions 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "amethyst_tiles"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "amethyst_assets 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_core 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_error 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_rendy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "amethyst_window 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "bitintr 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "derivative 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "glsl-layout 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "hibitset 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "rayon 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.98 (registry+https://github.com/rust-lang/crates.io-index)",
- "smallvec 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -546,11 +520,6 @@ dependencies = [
 [[package]]
 name = "bitflags"
 version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "bitintr"
-version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -3724,7 +3693,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum amethyst_locale 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c6d96864f72d862d9ad7f9f652a88936d9ca0eced7053d02fce0f915067431a8"
 "checksum amethyst_network 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "35f660e175fedfcc7beb5b8271778f0f7474c7fa3b1b11f9fd636c62ea0b26a8"
 "checksum amethyst_rendy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3591d30ecb0cf5d65c53a676491c98665cefc3d14f4d8c839797604ba1329e44"
-"checksum amethyst_tiles 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "c3207ba370d2c43ce12948683781cd372406e274de6fc4f878804defefcb0fd1"
 "checksum amethyst_ui 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "db47845eb2f60670890d1e15cc843e03bb40508da19a036043d159af96ab7573"
 "checksum amethyst_utils 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fba538cae28df0db2492cd3db96879defc0007990cd0fcaff31839e6fe2ea63f"
 "checksum amethyst_window 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e61febb19f43727e147eea71188119e7516711d6d25441b176d299f6c26cdb92"
@@ -3746,7 +3714,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum bincode 1.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "9f04a5e50dc80b3d5d35320889053637d15011aed5e66b66b37ae798c65da6f7"
 "checksum bindgen 0.32.3 (registry+https://github.com/rust-lang/crates.io-index)" = "8b242e11a8f446f5fc7b76b37e81d737cabca562a927bd33766dac55b5f1177f"
 "checksum bitflags 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3d155346769a6855b86399e9bc3814ab343cd3d62c7e985113d46a0ec3c281fd"
-"checksum bitintr 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7ba5a5c4df8ac8673f22698f443ef1ce3853d7f22d5a15ebf66b9a7553b173dd"
 "checksum blake2-rfc 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "5d6d530bdd2d52966a6d03b7a964add7ae1a288d25214066fd4b600f0f796400"
 "checksum block 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 "checksum build_const 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "39092a32794787acd8525ee150305ff051b0aa6cc2abaf193924f5ab05425f39"
