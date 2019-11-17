@@ -1,0 +1,109 @@
+on: [push, pull_request]
+
+jobs:
+  check-on-ubunutu:
+    name: Check on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Dependecies
+        run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
+      - name: Install nightly toolchain with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Cargo Fmt
+        run: cargo fmt -- --check
+      - name: Cargo Clippy
+        run: |
+          chmod +x run_clippy.sh
+          ./run_clippy.sh
+      - name: Build debug
+        run: cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose
+  check-on-windows:
+    name: Check on Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install nightly toolchain with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Cargo Clippy
+        run: powershell -ExecutionPolicy ByPass -File .\run_clippy.ps1
+  build-on-ubunutu:
+    name: Build on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install Dependecies
+        run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
+      - name: Install nightly toolchain with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build release
+        run: cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --release
+      - name: Make Build Directory
+        run: mkdir build
+      - name: Copy Resources to Build Directory
+        run: cp -a ./resources ./build/
+      - name: Copy Build Artifacts
+        run: find ./target/release/ -maxdepth 1 -type f -print0 | xargs -0 cp -t ./build
+      - uses: actions/upload-artifact@master
+        with:
+          name: "UbuntuBuild"
+          path: "build/"
+  build-on-mac:
+    name: Build on macOS
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install nightly toolchain with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build release
+        run: source $HOME/.cargo/env && cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --release
+      - name: Make Build Directory
+        run: mkdir build
+      - name: Copy Resources to Build Directory
+        run: cp -R ./resources ./build/
+      - name: Copy Build Artifacts
+        run: find ./target/release/ -maxdepth 1 -type f -print0 | xargs -0 -J % cp % ./build
+      - uses: actions/upload-artifact@master
+        with:
+          name: "MacBuild"
+          path: "build/"
+  build-on-windows:
+    name: Build on Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install nightly toolchain with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build release
+        run: cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --release
+      - name: Copy Build Artifacts
+        run: powershell -ExecutionPolicy ByPass -File .\copy_build_artifact.ps1
+      - uses: actions/upload-artifact@master
+        with:
+          name: "WindowsBuild"
+          path: "build/"

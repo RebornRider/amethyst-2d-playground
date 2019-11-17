@@ -1,0 +1,9 @@
+clippy::float_arithmetic
+clippy::implicit_return
+clippy::integer_arithmetic
+clippy::missing_docs_in_private_items
+clippy::module_name_repetitions
+clippy::multiple_crate_versions
+clippy::must_use_candidate
+clippy::result_expect_used
+clippy::wildcard_enum_match_arm

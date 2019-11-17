@@ -1,15 +1,22 @@
-use crate::{
-    audio::{play_bounce, Sounds},
-    Ball, Paddle, Side,
-};
-use amethyst::{
-    assets::AssetStorage,
-    audio::{output::Output, Source},
-    core::{transform::Transform, SystemDesc},
-    derive::SystemDesc,
-    ecs::prelude::{Join, Read, ReadExpect, ReadStorage, System, SystemData, WriteStorage, World},
-};
-use std::ops::Deref;
+use crate::{audio::{play_bounce,
+                    Sounds},
+            Ball,
+            Paddle,
+            Side};
+use amethyst::{assets::AssetStorage,
+               audio::{output::Output,
+                       Source},
+               core::{transform::Transform,
+                      SystemDesc},
+               derive::SystemDesc,
+               ecs::prelude::{Join,
+                              Read,
+                              ReadExpect,
+                              ReadStorage,
+                              System,
+                              SystemData,
+                              World,
+                              WriteStorage}};
 
 /// This system is responsible for detecting collisions between balls and
 /// paddles, as well as balls and the top and bottom edges of the arena.
@@ -17,19 +24,10 @@ use std::ops::Deref;
 pub struct BounceSystem;
 
 impl<'s> System<'s> for BounceSystem {
-    type SystemData = (
-        WriteStorage<'s, Ball>,
-        ReadStorage<'s, Paddle>,
-        ReadStorage<'s, Transform>,
-        Read<'s, AssetStorage<Source>>,
-        ReadExpect<'s, Sounds>,
-        Option<Read<'s, Output>>,
-    );
+    type SystemData =
+        (WriteStorage<'s, Ball>, ReadStorage<'s, Paddle>, ReadStorage<'s, Transform>, Read<'s, AssetStorage<Source>>, ReadExpect<'s, Sounds>, Option<Read<'s, Output>>);
 
-    fn run(
-        &mut self,
-        (mut balls, paddles, transforms, storage, sounds, audio_output): Self::SystemData,
-    ) {
+    fn run(&mut self, (mut balls, paddles, transforms, storage, sounds, audio_output): Self::SystemData) {
         // Check whether a ball collided, and bounce off accordingly.
         //
         // We also check for the velocity of the ball every time, to prevent multiple collisions
@@ -41,11 +39,9 @@ impl<'s> System<'s> for BounceSystem {
             let ball_y = transform.translation().y;
 
             // Bounce at the top or the bottom of the arena.
-            if (ball_y <= ball.radius && ball.velocity[1] < 0.0)
-                || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0)
-            {
+            if (ball_y <= ball.radius && ball.velocity[1] < 0.0) || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0) {
                 ball.velocity[1] = -ball.velocity[1];
-                play_bounce(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
+                play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
             }
 
             // Bounce at the paddles.
@@ -58,18 +54,16 @@ impl<'s> System<'s> for BounceSystem {
                 // lowest coordinates, and adding the ball radius to the highest ones. The ball
                 // is then within the paddle if its centre is within the larger wrapper
                 // rectangle.
-                if point_in_rect(
-                    ball_x,
-                    ball_y,
-                    paddle_x - ball.radius,
-                    paddle_y - ball.radius,
-                    paddle_x + (paddle.width + ball.radius),
-                    paddle_y + (paddle.height + ball.radius),
-                ) && ((paddle.side == Side::Left && ball.velocity[0] < 0.0)
-                    || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
+                if point_in_rect(ball_x,
+                                 ball_y,
+                                 paddle_x - ball.radius,
+                                 paddle_y - ball.radius,
+                                 paddle_x + (paddle.width + ball.radius),
+                                 paddle_y + (paddle.height + ball.radius))
+                   && ((paddle.side == Side::Left && ball.velocity[0] < 0.0) || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
                 {
                     ball.velocity[0] = -ball.velocity[0];
-                    play_bounce(&*sounds, &storage, audio_output.as_ref().map(|o| o.deref()));
+                    play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
                 }
             }
         }
@@ -78,6 +72,4 @@ impl<'s> System<'s> for BounceSystem {
 
 // A point is in a box when its coordinates are smaller or equal than the top
 // right and larger or equal than the bottom left.
-fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
-    x >= left && x <= right && y >= bottom && y <= top
-}
+fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool { x >= left && x <= right && y >= bottom && y <= top }

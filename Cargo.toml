@@ -1,12 +1,22 @@
 [package]
 name = "amethyst-starter-2d"
-version = "0.1.0"
-authors = ["Hilmar Wiegand <me@hwgnd.de>"]
+version = "0.0.2"
+authors = ["Kevin Agwaze <mrkivinator@gmail.com>"]
+description = "amethyst game engine playground"
 edition = "2018"
+repository = "https://github.com/RebornRider/amethyst-2d-playground"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["game"]
+categories = ["games"]
 
 [dependencies]
-amethyst = { version = "0.13.2", features = ["nightly"] }
-log = { version = "0.4.8", features = ["serde"] }
+amethyst = { version = "0.*", features = ["nightly"] }
+log = { version = "0.4.*", features = ["serde"] }
+dunce = "1.*"
+serde = { version = "1.*", features = ["derive"] }
+amethyst_utils = { version = "0.8.*" }
+amethyst_derive = { version = "0.6.*" }
 
 [features]
 default = ["vulkan"]

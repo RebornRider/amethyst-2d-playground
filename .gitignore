@@ -1,5 +1,10 @@
 # Unwanted files
+target/
+build/
+
+book/book
 target
+*.log
 
 # Backup files
 .DS_Store
@@ -7,3 +12,10 @@ thumbs.db
 *~
 *.rs.bk
 *.swp
+
+# IDE / Editor files
+*.iml
+.vscode
+
+# Thread profiler output
+thread_profile.json

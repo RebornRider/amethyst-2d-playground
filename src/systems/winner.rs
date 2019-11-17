@@ -1,13 +1,23 @@
-use crate::{audio::Sounds, Ball, ScoreBoard};
-use amethyst::{
-    assets::AssetStorage,
-    audio::{output::Output, Source},
-    core::{transform::Transform, SystemDesc},
-    derive::SystemDesc,
-    ecs::prelude::{Entity, Join, Read, ReadExpect, System, SystemData, Write, WriteStorage, World},
-    ui::UiText,
-    utils::fps_counter::FpsCounter,
-};
+use crate::{audio::Sounds,
+            Ball,
+            ScoreBoard};
+use amethyst::{assets::AssetStorage,
+               audio::{output::Output,
+                       Source},
+               core::{transform::Transform,
+                      SystemDesc},
+               derive::SystemDesc,
+               ecs::prelude::{Entity,
+                              Join,
+                              Read,
+                              ReadExpect,
+                              System,
+                              SystemData,
+                              World,
+                              Write,
+                              WriteStorage},
+               ui::UiText,
+               utils::fps_counter::FpsCounter};
 
 /// This system is responsible for checking if a ball has moved into a left or
 /// a right edge. Points are distributed to the player on the other side, and
@@ -15,38 +25,22 @@ use amethyst::{
 #[derive(SystemDesc)]
 pub struct WinnerSystem;
 
-
 impl<'s> System<'s> for WinnerSystem {
-    type SystemData = (
-        WriteStorage<'s, Ball>,
-        WriteStorage<'s, Transform>,
-        WriteStorage<'s, UiText>,
-        Write<'s, ScoreBoard>,
-        Read<'s, AssetStorage<Source>>,
-        ReadExpect<'s, Sounds>,
-        ReadExpect<'s, ScoreText>,
-        Option<Read<'s, Output>>,
-        Read<'s, FpsCounter>,
-    );
+    type SystemData = (WriteStorage<'s, Ball>,
+                       WriteStorage<'s, Transform>,
+                       WriteStorage<'s, UiText>,
+                       Write<'s, ScoreBoard>,
+                       Read<'s, AssetStorage<Source>>,
+                       ReadExpect<'s, Sounds>,
+                       ReadExpect<'s, ScoreText>,
+                       Option<Read<'s, Output>>,
+                       Read<'s, FpsCounter>);
 
-    fn run(
-        &mut self,
-        (
-            mut balls,
-            mut transforms,
-            mut text,
-            mut score_board,
-            storage,
-            sounds,
-            score_text,
-            audio_output,
-            fps_counter
-        ): Self::SystemData,
-    ) {
-            if let Some(text) = text.get_mut(score_text.fps_display) {
-                let fps = fps_counter.sampled_fps();
-                text.text = format!("FPS: {:.*}", 2, fps);
-            }
+    fn run(&mut self, (mut balls, mut transforms, mut text, mut score_board, storage, sounds, score_text, audio_output, fps_counter): Self::SystemData) {
+        if let Some(text) = text.get_mut(score_text.fps_display) {
+            let fps = fps_counter.sampled_fps();
+            text.text = format!("FPS: {:.*}", 2, fps);
+        }
 
         for (ball, transform) in (&mut balls, &mut transforms).join() {
             use crate::ARENA_WIDTH;
@@ -78,12 +72,6 @@ impl<'s> System<'s> for WinnerSystem {
                 ball.velocity[0] = -ball.velocity[0];
                 transform.set_translation_x(ARENA_WIDTH / 2.0);
 
-                // Print the score board.
-                println!(
-                    "Score: | {:^3} | {:^3} |",
-                    score_board.score_left, score_board.score_right
-                );
-
                 // Play audio.
                 if let Some(ref output) = audio_output {
                     if let Some(sound) = storage.get(&sounds.score_sfx) {
@@ -95,9 +83,9 @@ impl<'s> System<'s> for WinnerSystem {
     }
 }
 
-/// Stores the entities that are displaying the player score with UiText.
+/// Stores the entities that are displaying the player score with `UiText`.
 pub struct ScoreText {
-    pub p1_score: Entity,
-    pub p2_score: Entity,
+    pub p1_score:    Entity,
+    pub p2_score:    Entity,
     pub fps_display: Entity,
 }

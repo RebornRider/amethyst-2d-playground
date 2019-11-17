@@ -4,6 +4,7 @@
 */
 
 (
-  title: "Pong!",
-  dimensions: Some((1500, 1000)),
+  dimensions: Some((1280, 720)),
+  title: "Pong example",
+  vsync: Some(false),
 )
