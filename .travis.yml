@@ -19,6 +19,7 @@ env:
   global:
     - CARGO_MAKE_RUN_CODECOV="true"
     - CARGO_MAKE_KCOV_INSTALLATION_DIRECTORY="$HOME/.cache/kcov"
+    #- CARGO_MAKE_COVERAGE_PROVIDER="tarpaulin"
 
 addons:
   apt:
@@ -47,12 +48,17 @@ cache:
     - $HOME/.cargo
     - $HOME/.cache
 
+install:
+  # tarpaulin is currently segfaulting
+  #- command -v cargo-tarpaulin >/dev/null 2>&1 || cargo install cargo-tarpaulin
+  - command -v cargo-make >/dev/null 2>&1 || cargo install --debug cargo-make
+
 before_cache:
   - rm -rf "$TRAVIS_HOME/.cargo/registry/src"
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
-      cargo install cargo-tarpaulin -f
-      cargo install --debug cargo-make
+      cargo install cargo-tarpaulin -f;
+      cargo install --debug cargo-make;
     fi
 
 before_script:
@@ -64,7 +70,7 @@ before_script:
 script:
   - cargo clean
   - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
-      cargo make ci-flow
+      cargo make ci-flow;
       cargo fmt --all -- --check;
     fi
   - cargo build --verbose --all --all-targets
