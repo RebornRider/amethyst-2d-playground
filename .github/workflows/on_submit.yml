@@ -64,7 +64,7 @@ jobs:
     - name: Install toolchain with clippy and rustfmt
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: nightly
+        toolchain: nightly-2019-11-13
         override: true
     - name: Run test (with generating coverage reports)
       uses: actions-rs/cargo@v1
