@@ -1,14 +1,14 @@
 language: rust
+os: linux
 
 rust:
   - stable
   - beta
   - nightly
 
-matrix:
+jobs:
   allow_failures:
-    - rust:
-      - nightly
+    - rust: nightly
 
 addons:
   apt:
