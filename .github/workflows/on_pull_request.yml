@@ -69,20 +69,20 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --all --no-fail-fast
-      env:
-        CARGO_INCREMENTAL: 0
-        RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads"
-    - name: Collect nightly coverage reports
+        args: --no-fail-fast
+        env:
+          CARGO_INCREMENTAL: 0
+          RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
+    - name: Calculate coverage
       uses: actions-rs/grcov@v0.1.4
       if: success()
       id: coverage
-    - name: Send report to Codecov
+    - name: Upload coverage
       uses: codecov/codecov-action@v1.0.3
       if: success()
       with:
-        file: ./lcov.info
         token: ${{ secrets.CODECOV_TOKEN }}
+        file: ${{ steps.coverage.outputs.report }}
   build-on-ubunutu:
     name: Build on Ubuntu
     runs-on: ubuntu-latest
