@@ -41,7 +41,11 @@ addons:
       - build-essential
       - python3
 
-cache: cargo
+cache:
+  cargo: true
+  directories:
+    - $HOME/.cargo
+    - $HOME/.cache
 
 before_cache:
   - rm -rf "$TRAVIS_HOME/.cargo/registry/src"
