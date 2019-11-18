@@ -49,6 +49,41 @@ jobs:
           components: rustfmt, clippy
       - name: Cargo Clippy
         run: powershell -ExecutionPolicy ByPass -File .\run_clippy.ps1
+  coverage-nightly:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Dependecies
+      run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
+    - name: Install grcov
+      run: |
+        curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+        mkdir -pv $HOME/.grcov/bin
+        mv -v ./grcov $HOME/.grcov/bin
+        echo ::add-path::$HOME/.grcov/bin
+    - name: Install toolchain with clippy and rustfmt
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+    - name: Run test (with generating coverage reports)
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all --all-features --no-fail-fast
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads"
+    - name: Collect nightly coverage reports
+      uses: actions-rs/grcov@v0.1.4
+      if: success()
+      id: coverage
+    - name: Send report to Codecov
+      uses: codecov/codecov-action@v1.0.3
+      if: success()
+      with:
+        file: ./lcov.info
+        token: ${{ secrets.CODECOV_TOKEN }}
   build-on-ubunutu:
     name: Build on Ubuntu
     runs-on: ubuntu-latest
