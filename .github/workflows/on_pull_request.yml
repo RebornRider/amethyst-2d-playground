@@ -70,9 +70,9 @@ jobs:
       with:
         command: test
         args: --no-fail-fast
-        env:
-          CARGO_INCREMENTAL: 0
-          RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: -Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
     - name: Calculate coverage
       uses: actions-rs/grcov@v0.1.4
       if: success()
