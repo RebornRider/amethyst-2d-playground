@@ -15,6 +15,11 @@ jobs:
     - rust: beta
     - rust: nightly
 
+env:
+  global:
+    - CARGO_MAKE_RUN_CODECOV="true"
+    - CARGO_MAKE_KCOV_INSTALLATION_DIRECTORY="$HOME/.cache/kcov"
+
 addons:
   apt:
     packages:
@@ -43,6 +48,7 @@ before_cache:
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
       cargo install cargo-tarpaulin -f
+      cargo install --debug cargo-make
     fi
 
 before_script:
@@ -53,7 +59,10 @@ before_script:
 
 script:
   - cargo clean
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then cargo fmt --all -- --check; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
+      cargo make ci-flow
+      cargo fmt --all -- --check;
+    fi
   - cargo build --verbose --all --all-targets
   - cargo test --verbose --all
 
