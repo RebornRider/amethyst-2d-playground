@@ -66,7 +66,7 @@ jobs:
         args: --no-fail-fast
       env:
         CARGO_INCREMENTAL: 0
-        RUSTFLAGS: -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off 
+        RUSTFLAGS: -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
     - name: Install cargo-tarpaulin
       run: cargo install cargo-tarpaulin -f
     - name: Run cargo-tarpaulin
