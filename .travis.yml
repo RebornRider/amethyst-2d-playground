@@ -15,12 +15,6 @@ jobs:
     - rust: beta
     - rust: nightly
 
-env:
-  global:
-    - CARGO_MAKE_RUN_CODECOV="true"
-    - CARGO_MAKE_KCOV_INSTALLATION_DIRECTORY="$HOME/.cache/kcov"
-    #- CARGO_MAKE_COVERAGE_PROVIDER="tarpaulin"
-
 addons:
   apt:
     packages:
@@ -42,24 +36,12 @@ addons:
       - build-essential
       - python3
 
-cache:
-  cargo: true
-  directories:
-    - $HOME/.cargo
-    - $HOME/.cache
+cache: cargo
 
-install:
-  # tarpaulin is currently segfaulting
-  #- command -v cargo-tarpaulin >/dev/null 2>&1 || cargo install cargo-tarpaulin
-  - command -v cargo-make >/dev/null 2>&1 || cargo install --debug cargo-make
-
-before_cache:
-  - rm -rf "$TRAVIS_HOME/.cargo/registry/src"
-  - |
-    if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
-      cargo install cargo-tarpaulin -f;
-      cargo install --debug cargo-make;
-    fi
+before_cache: |
+  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    cargo install cargo-tarpaulin -f
+  fi
 
 before_script:
     - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
@@ -69,16 +51,24 @@ before_script:
 
 script:
   - cargo clean
-  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
-      cargo make ci-flow;
-      cargo fmt --all -- --check;
-    fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then cargo fmt --all -- --check; fi
   - cargo build --verbose --all --all-targets
   - cargo test --verbose --all
 
 after_success:
   - |
     if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
-      cargo tarpaulin --out Xml
-      bash <(curl -s https://codecov.io/bash)
+      wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
+      tar xzf master.tar.gz &&
+      cd kcov-master &&
+      mkdir build &&
+      cd build &&
+      cmake .. &&
+      make &&
+      make install DESTDIR=../../kcov-build &&
+      cd ../.. &&
+      rm -rf kcov-master &&
+      for file in target/debug/amethyst-starter-2d*; do [ -x "${file}" ] || continue; mkdir -p "target/cov/$(basename $file)"; ./kcov-build/usr/local/bin/kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+      bash <(curl -s https://codecov.io/bash) &&
+      echo "Uploaded code coverage";
     fi
