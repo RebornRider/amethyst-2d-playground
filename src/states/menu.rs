@@ -73,45 +73,7 @@ impl SimpleState for MainMenu {
 
                 Trans::None
             }
-            StateEvent::Input(..)
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::ClickStart,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::ClickStop,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::HoverStart,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::HoverStop,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::Dragging { .. },
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::Dropped { .. },
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::ValueChange,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::ValueCommit,
-                ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::Focus, ..
-            })
-            | StateEvent::Ui(UiEvent {
-                event_type: UiEventType::Blur, ..
-            }) => Trans::None,
+            _ => Trans::None,
         }
     }
 

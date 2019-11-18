@@ -60,6 +60,14 @@ jobs:
       with:
         toolchain: stable
         override: true
+    - name: Build debug
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --all-targets
+      env:
+        CARGO_INCREMENTAL: 0
+        RUSTFLAGS: -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
     - name: Run test (with generating coverage reports)
       uses: actions-rs/cargo@v1
       with:
