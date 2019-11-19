@@ -36,8 +36,6 @@ addons:
       - build-essential
       - python3
 
-cache: cargo
-
 before_script:
     - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then
         rustup component add rustfmt;
