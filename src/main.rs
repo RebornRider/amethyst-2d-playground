@@ -50,7 +50,15 @@ fn main() -> amethyst::Result<()> {
 }
 
 fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), Error> {
-    let app_root = path::PathBuf::from(dunce::canonicalize(application_root_dir()?)?.to_str().unwrap_or_default().replace(r"\target\debug", ""));
+    let app_root = path::PathBuf::from(
+        dunce::canonicalize(application_root_dir()?)?
+            .to_str()
+            .unwrap_or_default()
+            .replace(r"\target\debug\deps", "")
+            .replace(r"\target\debug", "")
+            .replace(r"\target\release\deps", "")
+            .replace(r"\target\release", ""),
+    );
     let display_config_path = app_root.join("resources/config/display.ron");
     let key_bindings_path = {
         if cfg!(feature = "sdl_controller") {
