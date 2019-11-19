@@ -18,3 +18,13 @@ impl std::default::Default for GameplayState {
         Self::Paused
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_GameplayState() {
+        assert_eq!(GameplayState::default(), GameplayState::Paused);
+    }
+}
