@@ -44,8 +44,9 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: default
-          toolchain: nightly
+          toolchain: stable
           override: true
+          components: rustfmt, clippy
       - name: Cargo Clippy
         run: powershell -ExecutionPolicy ByPass -File .\run_clippy.ps1
   coverage-tarpaulin:
