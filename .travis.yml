@@ -47,3 +47,4 @@ script:
   - if [ "$TRAVIS_OS_NAME" == "linux" ] && [ "$TRAVIS_RUST_VERSION" == "stable" ]; then cargo fmt --all -- --check; fi
   - cargo build --verbose --all --all-targets
   - cargo test --verbose --all
+    env: RUST_BACKTRACE=1

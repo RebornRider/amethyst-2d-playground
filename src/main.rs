@@ -50,15 +50,7 @@ fn main() -> amethyst::Result<()> {
 }
 
 fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), Error> {
-    let app_root = path::PathBuf::from(
-        dunce::canonicalize(application_root_dir()?)?
-            .to_str()
-            .unwrap_or_default()
-            .replace(r"\target\debug\deps", "")
-            .replace(r"\target\debug", "")
-            .replace(r"\target\release\deps", "")
-            .replace(r"\target\release", ""),
-    );
+    let app_root = initialize_app_root()?;
     let display_config_path = app_root.join("resources/config/display.ron");
     let key_bindings_path = {
         if cfg!(feature = "sdl_controller") {
@@ -69,6 +61,17 @@ fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), E
     };
     let assets_dir = app_root.join("resources/");
     Ok((display_config_path, key_bindings_path, assets_dir))
+}
+
+fn initialize_app_root() -> Result<path::PathBuf, Error> {
+    let app_root = dunce::canonicalize(application_root_dir()?)?;
+    let directory = "amethyst-2d-playground";
+    if let Some(index) = app_root.to_str().unwrap_or_default().rfind("amethyst-2d-playground") {
+        let mut path = app_root.to_str().unwrap_or_default().to_string();
+        path.truncate(index + directory.len());
+        return Ok(path::PathBuf::from(path));
+    }
+    Ok(app_root)
 }
 
 fn build_game(
@@ -185,6 +188,7 @@ mod tests {
     #[test]
     fn validate_paths_are_not_garbage() -> amethyst::Result<()> {
         let (mut display_config_path, mut key_bindings_path, mut assets_dir) = initialize_paths()?;
+
         assert!(display_config_path.is_absolute());
         assert!(display_config_path.pop());
 
@@ -193,27 +197,14 @@ mod tests {
 
         assert!(assets_dir.is_absolute());
         assert!(assets_dir.pop());
+
         Ok(())
     }
 
     #[test]
     fn validate_game_data_builder() -> amethyst::Result<()> {
         let (display_config_path, key_bindings_path, _) = initialize_paths()?;
-        use log::{error, info};
-
-        {
-            let path = key_bindings_path.clone().into_os_string();
-            info!("validate_game_data_builder - key_bindings_path:  {:?}", path);
-        }
-
-        {
-            let path = display_config_path.clone().into_os_string();
-            info!("validate_game_data_builder - display_config_path:  {:?}", path);
-        }
-
-        if let Err(error) = build_game_data(display_config_path, key_bindings_path) {
-            error!("build_game_data with error code: {}", error);
-        }
+        build_game_data(display_config_path, key_bindings_path)?;
         Ok(())
     }
 }
