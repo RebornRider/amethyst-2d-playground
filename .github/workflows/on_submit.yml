@@ -66,7 +66,7 @@ jobs:
         sudo usermod -a -G audio $USER
         sudo apt-get install -y portaudio19-dev
         sudo apt-get install -y libasound2-dev alsa-utils alsa-oss
-        sudo bash test/prep-dummy-soundcard.sh
+        sudo bash prep-dummy-soundcard.sh
         sudo apt-get install -y lame
         cargo install cargo-tarpaulin -f
     - name: Run cargo-tarpaulin
