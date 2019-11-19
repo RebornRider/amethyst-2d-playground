@@ -199,7 +199,7 @@ mod tests {
     #[test]
     fn validate_game_data_builder() -> amethyst::Result<()> {
         let (display_config_path, key_bindings_path, _) = initialize_paths()?;
-        use log::info;
+        use log::{error, info};
 
         {
             let path = key_bindings_path.clone().into_os_string();
@@ -211,7 +211,9 @@ mod tests {
             info!("validate_game_data_builder - display_config_path:  {:?}", path);
         }
 
-        let _game_data = build_game_data(display_config_path, key_bindings_path)?;
+        if let Err(error) = build_game_data(display_config_path, key_bindings_path) {
+            error!("build_game_data with error code: {}", error);
+        }
         Ok(())
     }
 }
