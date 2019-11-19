@@ -60,3 +60,26 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use amethyst::audio::output::init_output;
+    use amethyst::audio::AudioBundle;
+    use amethyst::core::transform::TransformBundle;
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_initialise_audio() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_assertion(|world| {
+                init_output(world);
+                initialise_audio(world);
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+}

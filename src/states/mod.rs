@@ -24,7 +24,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_default_GameplayState() {
+    fn test_default_gameplay_state() {
         assert_eq!(GameplayState::default(), GameplayState::Paused);
     }
 }

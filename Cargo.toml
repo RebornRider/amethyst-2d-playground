@@ -16,6 +16,7 @@ amethyst_test = { version = "0" }
 log = { version = "0", features = ["serde"] }
 dunce = { version = "1" }
 serde = { version = "1", features = ["derive"] }
+test-case = { version = "0" }
 
 [features]
 default = ["vulkan"]

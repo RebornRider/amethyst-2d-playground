@@ -42,9 +42,8 @@ mod tests {
                 assert!(result.is_ok());
                 assert_eq!(world.is_alive(entity), false);
             })
-            .run()
-            .is_ok();
-        assert!(test_result);
+            .run();
+        assert!(test_result.is_ok());
     }
 
     #[test]
@@ -65,9 +64,8 @@ mod tests {
                 assert_eq!(world.is_alive(entity1), false);
                 assert_eq!(world.is_alive(entity2), true);
             })
-            .run()
-            .is_ok();
-        assert!(test_result);
+            .run();
+        assert!(test_result.is_ok());
     }
 
     #[test]
@@ -88,8 +86,7 @@ mod tests {
                 assert_eq!(world.is_alive(parent), true);
                 assert_eq!(world.is_alive(child), false);
             })
-            .run()
-            .is_ok();
-        assert!(test_result);
+            .run();
+        assert!(test_result.is_ok());
     }
 }

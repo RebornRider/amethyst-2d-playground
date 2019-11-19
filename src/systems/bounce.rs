@@ -74,3 +74,23 @@ impl<'s> System<'s> for BounceSystem {
 fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
     x >= left && x <= right && y >= bottom && y <= top
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test_case::test_case;
+
+    #[test_case(0.0, 0.0, 0.0, 0.0, 0.0, 0.0 => true)]
+    #[test_case(0.0, 0.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(1.0, 0.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(0.0, 1.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(-10.0, 0.0, -10.0, -10.0, 10.0, 10.0 => true)]
+    #[test_case(0.0, -10.0, -10.0, -10.0, 10.0, 10.0 => true)]
+    #[test_case(2.0, 0.0, -1.0, -1.0, 1.0, 1.0 => false)]
+    #[test_case(0.0, 2.0, -1.0, -1.0, 1.0, 1.0 => false)]
+    #[test_case(-20.0, 0.0, -10.0, -10.0, 10.0, 10.0 => false)]
+    #[test_case(0.0, -20.0, -10.0, -10.0, 10.0, 10.0 => false)]
+    fn test_point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
+        point_in_rect(x, y, left, bottom, right, top)
+    }
+}
