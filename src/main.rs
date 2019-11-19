@@ -84,6 +84,19 @@ fn build_game(
 }
 
 fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::PathBuf) -> Result<GameDataBuilder<'static, 'static>, Error> {
+    use log::warn;
+    if key_bindings_path.as_path().exists() == false || key_bindings_path.as_path().is_file() == false {
+        let path = key_bindings_path.into_os_string();
+        warn!("{:?} does not exist", path);
+        return Err(Error::from_string("bad key_bindings_path"));
+    }
+
+    if display_config_path.as_path().exists() == false || display_config_path.as_path().is_file() == false {
+        let path = display_config_path.into_os_string();
+        warn!("{:?} does not exist", path);
+        return Err(Error::from_string("bad display_config_path"));
+    }
+
     GameDataBuilder::default()
     // Add the transform bundle which handles tracking entity positions
     .with_bundle(TransformBundle::new())?
@@ -186,6 +199,18 @@ mod tests {
     #[test]
     fn validate_game_data_builder() -> amethyst::Result<()> {
         let (display_config_path, key_bindings_path, _) = initialize_paths()?;
+        use log::info;
+
+        {
+            let path = key_bindings_path.clone().into_os_string();
+            info!("validate_game_data_builder - key_bindings_path:  {:?}", path);
+        }
+
+        {
+            let path = display_config_path.clone().into_os_string();
+            info!("validate_game_data_builder - display_config_path:  {:?}", path);
+        }
+
         let _game_data = build_game_data(display_config_path, key_bindings_path)?;
         Ok(())
     }
