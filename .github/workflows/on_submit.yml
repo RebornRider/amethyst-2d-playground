@@ -62,9 +62,12 @@ jobs:
         override: true
     - name: Install cargo-tarpaulin
       run: |
-        sudo apt-get install -qq alsa-utils
-        sudo modprobe snd-dummy
-        sudo usermod -G audio $USER
+        sudo apt-get update -qq
+        sudo usermod -a -G audio travis
+        sudo apt-get install -y portaudio19-dev
+        sudo apt-get install -y libasound2-dev alsa-utils alsa-oss
+        sudo bash test/prep-dummy-soundcard.sh
+        sudo apt-get install -y lame
         cargo install cargo-tarpaulin -f
     - name: Run cargo-tarpaulin
       run: cargo tarpaulin -v --out Xml && bash <(curl -s https://codecov.io/bash)
