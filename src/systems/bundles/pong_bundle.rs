@@ -22,3 +22,15 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PongBundle {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn register_bundle() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        assert!(AmethystApplication::blank().with_bundle(PongBundle).run().is_ok())
+    }
+}
