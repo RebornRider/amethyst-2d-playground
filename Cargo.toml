@@ -12,8 +12,9 @@ categories = ["games"]
 
 [dependencies]
 amethyst = { version = "0" }
+amethyst_test = { version = "0" }
 log = { version = "0", features = ["serde"] }
-dunce = "1"
+dunce = { version = "1" }
 serde = { version = "1", features = ["derive"] }
 
 [features]

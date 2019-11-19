@@ -8,6 +8,7 @@ use amethyst::{
     audio::{AudioBundle, DjSystemDesc},
     core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
     ecs::{Component, DenseVecStorage},
+    error::Error,
     input::{InputBundle, StringBindings},
     prelude::*,
     renderer::{
@@ -42,11 +43,15 @@ const AUDIO_SCORE: &str = "audio/score.ogg";
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(amethyst::LoggerConfig::default());
+    let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
+    let mut game = build_game(display_config_path, key_bindings_path, assets_dir)?;
+    game.run();
+    Ok(())
+}
 
-    let app_root = path::PathBuf::from(dunce::canonicalize(application_root_dir()?)?.to_str().unwrap_or_default().replace(r"\target\debug", ""));
-
+fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), Error> {
+    let app_root = initialize_app_root()?;
     let display_config_path = app_root.join("resources/config/display.ron");
-
     let key_bindings_path = {
         if cfg!(feature = "sdl_controller") {
             app_root.join("resources/config/input_controller.ron")
@@ -54,38 +59,69 @@ fn main() -> amethyst::Result<()> {
             app_root.join("resources/config/input.ron")
         }
     };
-
     let assets_dir = app_root.join("resources/");
+    Ok((display_config_path, key_bindings_path, assets_dir))
+}
 
-    let game_data = GameDataBuilder::default()
-        // Add the transform bundle which handles tracking entity positions
-        .with_bundle(TransformBundle::new())?
-        .with_bundle(HotReloadBundle::default())?
-        .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-        .with_bundle(AudioBundle::default())?
-        .with_bundle(FpsCounterBundle::default())?
-        .with_system_desc(
-            DjSystemDesc::new(|music: &mut Music| music.music.next()),
-            "dj_system",
-            &[],
-        )
-        .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
-        .with_bundle(UiBundle::<StringBindings>::new())?
-        .with_bundle(
-            RenderingBundle::<DefaultBackend>::new()
-                // The RenderToWindow plugin provides all the scaffolding for opening a window and
-                // drawing on it
-                .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
-                .with_plugin(RenderFlat2D::default())
-                .with_plugin(RenderUi::default()),
-        )?;
+fn initialize_app_root() -> Result<path::PathBuf, Error> {
+    let app_root = dunce::canonicalize(application_root_dir()?)?;
+    let directory = "amethyst-2d-playground";
+    if let Some(index) = app_root.to_str().unwrap_or_default().rfind("amethyst-2d-playground") {
+        let mut path = app_root.to_str().unwrap_or_default().to_string();
+        path.truncate(index + directory.len());
+        return Ok(path::PathBuf::from(path));
+    }
+    Ok(app_root)
+}
 
-    let mut game = Application::build(assets_dir, states::WelcomeScreen::default())?
+fn build_game(
+    display_config_path: path::PathBuf,
+    key_bindings_path: path::PathBuf,
+    assets_dir: path::PathBuf,
+) -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+    let game_data = build_game_data(display_config_path, key_bindings_path)?;
+    let game = Application::build(assets_dir, states::WelcomeScreen::default())?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
         .build(game_data)?;
+    Ok(game)
+}
 
-    game.run();
-    Ok(())
+fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::PathBuf) -> Result<GameDataBuilder<'static, 'static>, Error> {
+    use log::warn;
+    if key_bindings_path.as_path().exists() == false || key_bindings_path.as_path().is_file() == false {
+        let path = key_bindings_path.into_os_string();
+        warn!("{:?} does not exist", path);
+        return Err(Error::from_string("bad key_bindings_path"));
+    }
+
+    if display_config_path.as_path().exists() == false || display_config_path.as_path().is_file() == false {
+        let path = display_config_path.into_os_string();
+        warn!("{:?} does not exist", path);
+        return Err(Error::from_string("bad display_config_path"));
+    }
+
+    GameDataBuilder::default()
+    // Add the transform bundle which handles tracking entity positions
+    .with_bundle(TransformBundle::new())?
+    .with_bundle(HotReloadBundle::default())?
+    .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
+    .with_bundle(AudioBundle::default())?
+    .with_bundle(FpsCounterBundle::default())?
+    .with_system_desc(
+        DjSystemDesc::new(|music: &mut Music| music.music.next()),
+        "dj_system",
+        &[],
+    )
+    .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
+    .with_bundle(UiBundle::<StringBindings>::new())?
+    .with_bundle(
+        RenderingBundle::<DefaultBackend>::new()
+            // The RenderToWindow plugin provides all the scaffolding for opening a window and
+            // drawing on it
+            .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
+            .with_plugin(RenderFlat2D::default())
+            .with_plugin(RenderUi::default()),
+    )
 }
 
 pub struct Ball {
@@ -147,5 +183,28 @@ mod tests {
         assert_eq!(scoreboard.score_left, 0);
         assert_eq!(scoreboard.score_right, 0);
         assert_eq!(scoreboard.score_right, scoreboard.score_left);
+    }
+
+    #[test]
+    fn validate_paths_are_not_garbage() -> amethyst::Result<()> {
+        let (mut display_config_path, mut key_bindings_path, mut assets_dir) = initialize_paths()?;
+
+        assert!(display_config_path.is_absolute());
+        assert!(display_config_path.pop());
+
+        assert!(key_bindings_path.is_absolute());
+        assert!(key_bindings_path.pop());
+
+        assert!(assets_dir.is_absolute());
+        assert!(assets_dir.pop());
+
+        Ok(())
+    }
+
+    #[test]
+    fn validate_game_data_builder() -> amethyst::Result<()> {
+        let (display_config_path, key_bindings_path, _) = initialize_paths()?;
+        build_game_data(display_config_path, key_bindings_path)?;
+        Ok(())
     }
 }

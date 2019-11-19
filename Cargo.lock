@@ -91,6 +91,7 @@ name = "amethyst-starter-2d"
 version = "0.0.2"
 dependencies = [
  "amethyst 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "amethyst_test 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dunce 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -297,6 +298,18 @@ dependencies = [
  "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
  "smallvec 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "static_assertions 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "amethyst_test"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "amethyst 0.13.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "derivative 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "derive-new 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "derive_deref 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -868,6 +881,16 @@ dependencies = [
  "proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 1.0.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "derive_deref"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -3506,6 +3529,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum amethyst_locale 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "c6d96864f72d862d9ad7f9f652a88936d9ca0eced7053d02fce0f915067431a8"
 "checksum amethyst_network 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "35f660e175fedfcc7beb5b8271778f0f7474c7fa3b1b11f9fd636c62ea0b26a8"
 "checksum amethyst_rendy 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3591d30ecb0cf5d65c53a676491c98665cefc3d14f4d8c839797604ba1329e44"
+"checksum amethyst_test 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "001f08c8dd96a4aed4db4d245efa8c8aacf8612546ec9d2ec91f9a13bd8357cd"
 "checksum amethyst_ui 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "db47845eb2f60670890d1e15cc843e03bb40508da19a036043d159af96ab7573"
 "checksum amethyst_utils 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fba538cae28df0db2492cd3db96879defc0007990cd0fcaff31839e6fe2ea63f"
 "checksum amethyst_window 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e61febb19f43727e147eea71188119e7516711d6d25441b176d299f6c26cdb92"
@@ -3570,6 +3594,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum deflate 0.7.20 (registry+https://github.com/rust-lang/crates.io-index)" = "707b6a7b384888a70c8d2e8650b3e60170dfc6a67bb4aa67b6dfca57af4bedb4"
 "checksum derivative 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "942ca430eef7a3806595a6737bc388bf51adb888d3fc0dd1b50f1c170167ee3a"
 "checksum derive-new 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)" = "71f31892cd5c62e414316f2963c5689242c43d8e7bbcaaeca97e5e28c95d91d9"
+"checksum derive_deref 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "11554fdb0aa42363a442e0c4278f51c9621e20c1ce3bac51d79e60646f3b8b8f"
 "checksum dirs 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)" = "3fd78930633bd1c6e35c4b42b1df7b0cbc6bc191146e512bb3bedf243fcc3901"
 "checksum dlib 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "77e51249a9d823a4cb79e3eca6dcd756153e8ed0157b6c04775d04bf1b13b76a"
 "checksum downcast-rs 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "52ba6eb47c2131e784a38b726eb54c1e1484904f013e576a25354d0124161af6"

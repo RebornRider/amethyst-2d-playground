@@ -49,6 +49,23 @@ jobs:
           components: rustfmt, clippy
       - name: Cargo Clippy
         run: powershell -ExecutionPolicy ByPass -File .\run_clippy.ps1
+  coverage-tarpaulin:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Dependecies
+      run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
+    - name: Install toolchain with clippy and rustfmt
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin -f
+    - name: Run cargo-tarpaulin
+      run: cargo tarpaulin -v --out Xml && bash <(curl -s https://codecov.io/bash)
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   build-on-ubunutu:
     name: Build on Ubuntu
     runs-on: ubuntu-latest
