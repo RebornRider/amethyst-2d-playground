@@ -61,7 +61,11 @@ jobs:
         toolchain: stable
         override: true
     - name: Install cargo-tarpaulin
-      run: cargo install cargo-tarpaulin -f
+      run: |
+        sudo apt-get install -qq alsa-utils
+        sudo modprobe snd-dummy
+        sudo usermod -G audio $USER
+        cargo install cargo-tarpaulin -f
     - name: Run cargo-tarpaulin
       run: cargo tarpaulin -v --out Xml && bash <(curl -s https://codecov.io/bash)
       env:
