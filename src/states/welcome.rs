@@ -7,7 +7,7 @@ use amethyst::{
 };
 
 use crate::{
-    audio::initialise_audio,
+    audio::{initialise_audio, set_sink_volume},
     states::{util::delete_hierarchy, GameplayState},
 };
 
@@ -23,6 +23,7 @@ impl SimpleState for WelcomeScreen {
         world.insert(GameplayState::Paused);
         self.ui_handle = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())));
         initialise_audio(world);
+        set_sink_volume(world, 0.2);
     }
 
     fn on_stop(&mut self, data: StateData<GameData>) {

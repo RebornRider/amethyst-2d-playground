@@ -27,9 +27,6 @@ pub fn initialise_audio(world: &mut World) {
     let (sound_effects, music) = {
         let loader = world.read_resource::<Loader>();
 
-        let mut sink = world.write_resource::<AudioSink>();
-        sink.set_volume(0.25); // Music is a bit loud, reduce the volume.
-
         let music = AUDIO_MUSIC
             .iter()
             .map(|file| load_audio_track(&loader, world, file))
@@ -50,6 +47,11 @@ pub fn initialise_audio(world: &mut World) {
     // world won't let us insert new resources as long as `Loader` is borrowed.
     world.insert(sound_effects);
     world.insert(music);
+}
+
+pub fn set_sink_volume(world: &mut World, volume: f32) {
+    let mut sink = world.write_resource::<AudioSink>();
+    sink.set_volume(volume);
 }
 
 /// Plays the bounce sound when a ball hits a side or a paddle.
@@ -76,7 +78,6 @@ mod tests {
             .with_bundle(TransformBundle::new())
             .with_bundle(AudioBundle::default())
             .with_assertion(|world| {
-                init_output(world);
                 initialise_audio(world);
             })
             .run();
