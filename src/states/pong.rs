@@ -139,11 +139,12 @@ impl<'a, 'b> Pong<'a, 'b> {
                 if #[cfg(test)] {
                     let dispatcher_builder = DispatcherBuilder::new();
                 }  else {
-                    let mut dispatcher_builder = DispatcherBuilder::new();
-
-                    use crate::systems::PongBundle;
                     use amethyst::core::bundle::SystemBundle;
+                    use crate::systems::PongBundle;
+
+                    let mut dispatcher_builder = DispatcherBuilder::new();
                     let pong_bundle = PongBundle {};
+
                     pong_bundle.build(world, &mut dispatcher_builder).expect("couldnt add pong bundle to dispatcher");
                 }
             }

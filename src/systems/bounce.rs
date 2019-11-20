@@ -92,6 +92,7 @@ mod tests {
         renderer::{SpriteRender, SpriteSheet, Texture},
     };
     use amethyst_test::AmethystApplication;
+    use assert_approx_eq::assert_approx_eq;
     use test_case::test_case;
 
     #[test_case(0.0, 0.0, 0.0, 0.0, 0.0, 0.0 => true)]
@@ -136,7 +137,7 @@ mod tests {
                     if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
                         initialise_paddles(world, root_entity, sprite_sheet);
                     }
-                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
                         initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
                     }
@@ -175,7 +176,7 @@ mod tests {
                     if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
                         initialise_paddles(world, root_entity, sprite_sheet);
                     }
-                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
                         initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [-1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
                     }
@@ -188,7 +189,7 @@ mod tests {
                 assert_eq!(1, balls.count());
 
                 for (ball, _transform) in (&balls, &transforms).join() {
-                    assert_eq!(ball.velocity[0], 1.0);
+                    assert_approx_eq!(ball.velocity[0], 1.0);
                 }
             })
             .run();
@@ -223,7 +224,7 @@ mod tests {
                     if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
                         initialise_paddles(world, root_entity, sprite_sheet);
                     }
-                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
                         initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
                     }
@@ -236,7 +237,7 @@ mod tests {
                 assert_eq!(1, balls.count());
 
                 for (ball, _transform) in (&balls, &transforms).join() {
-                    assert_eq!(ball.velocity[0], 1.0);
+                    assert_approx_eq!(ball.velocity[0], 1.0);
                 }
             })
             .run();

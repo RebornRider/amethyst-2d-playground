@@ -61,6 +61,7 @@ pub fn set_sink_volume(world: &mut World, volume: f32) {
 pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Option<&Output>) {
     if let Some(output) = output.as_ref() {
         if let Some(sound) = storage.get(&sounds.bounce_sfx) {
+            #[cfg(not(test))]
             output.play_once(sound, 1.0);
         }
     }
