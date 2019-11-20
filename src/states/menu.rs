@@ -90,22 +90,22 @@ impl SimpleState for MainMenu {
             });
         }
 
-        #[cfg(test)]
-        return Trans::Quit;
-        Trans::None
+        cfg_if::cfg_if! {
+            if #[cfg(test)] {
+                Trans::Quit
+            }  else {
+                Trans::None
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{initialize_paths, setup_loader_for_test};
-    use amethyst::assets::{Directory, Loader};
+    use crate::setup_loader_for_test;
     use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
-    use amethyst::core::Parent;
-    use amethyst::input::{InputBundle, StringBindings};
-    use amethyst::ui::{RenderUi, UiBundle};
     use amethyst_test::AmethystApplication;
 
     #[test]

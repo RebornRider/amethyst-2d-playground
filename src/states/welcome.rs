@@ -6,11 +6,15 @@ use amethyst::{
     winit::{MouseButton, VirtualKeyCode},
 };
 
-use crate::{
-    audio::{initialise_audio, set_sink_volume},
-    setup_loader_for_test,
-    states::{util::delete_hierarchy, GameplayState},
-};
+cfg_if::cfg_if! {
+    if #[cfg(test)] {
+    use crate::audio::{initialise_audio};
+    }  else {
+    use crate::audio::{initialise_audio, set_sink_volume};
+    }
+}
+
+use crate::states::{util::delete_hierarchy, GameplayState};
 
 #[derive(Default, Debug)]
 pub struct WelcomeScreen {
@@ -19,14 +23,12 @@ pub struct WelcomeScreen {
 
 impl SimpleState for WelcomeScreen {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        let mut world = data.world;
+        data.world.insert(GameplayState::Paused);
+        self.ui_handle = Some(data.world.exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())));
 
-        world.insert(GameplayState::Paused);
-        self.ui_handle = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())));
-
-        initialise_audio(world);
+        initialise_audio(data.world);
         #[cfg(not(test))]
-        set_sink_volume(world, 0.2);
+        set_sink_volume(data.world, 0.2);
     }
 
     fn on_stop(&mut self, data: StateData<GameData>) {
@@ -54,17 +56,20 @@ impl SimpleState for WelcomeScreen {
     }
 
     fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        #[cfg(test)]
-        return Trans::Quit;
-        Trans::None
+        cfg_if::cfg_if! {
+            if #[cfg(test)] {
+                Trans::Quit
+            }  else {
+                Trans::None
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::initialize_paths;
-    use amethyst::assets::{Directory, Loader};
+    use crate::setup_loader_for_test;
     use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;

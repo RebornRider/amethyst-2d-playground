@@ -1,8 +1,9 @@
 use amethyst::{
     assets::{AssetStorage, Loader},
-    audio::{output::Output, AudioSink, OggFormat, Source, SourceHandle},
+    audio::{output::Output, OggFormat, Source, SourceHandle},
     ecs::{World, WorldExt},
 };
+
 use std::{iter::Cycle, vec::IntoIter};
 
 pub struct Sounds {
@@ -49,7 +50,9 @@ pub fn initialise_audio(world: &mut World) {
     world.insert(music);
 }
 
+#[cfg(not(test))]
 pub fn set_sink_volume(world: &mut World, volume: f32) {
+    use amethyst::audio::AudioSink;
     let mut sink = world.write_resource::<AudioSink>();
     sink.set_volume(volume);
 }
@@ -66,8 +69,7 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{initialize_paths, setup_loader_for_test};
-    use amethyst::assets::{Directory, Loader};
+    use crate::setup_loader_for_test;
     use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;

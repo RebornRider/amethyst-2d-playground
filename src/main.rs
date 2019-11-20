@@ -5,7 +5,6 @@ mod systems;
 
 use amethyst::{
     assets::HotReloadBundle,
-    assets::{Directory, Loader},
     audio::{AudioBundle, DjSystemDesc},
     core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
     ecs::{Component, DenseVecStorage},
@@ -125,11 +124,10 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
     )
 }
 
+#[cfg(test)]
 fn setup_loader_for_test(world: &mut World) {
-    let (_, _, mut assets_dir) = initialize_paths().unwrap();
-
-    let dir = assets_dir.to_str().unwrap();
-
+    use amethyst::assets::{Directory, Loader};
+    let (_, _, assets_dir) = initialize_paths().unwrap();
     let mut loader = world.write_resource::<Loader>();
     loader.set_default_source(Directory::new(assets_dir.clone()));
 }

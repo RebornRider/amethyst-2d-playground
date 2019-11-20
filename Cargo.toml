@@ -11,12 +11,13 @@ keywords = ["game"]
 categories = ["games"]
 
 [dependencies]
-amethyst = { version = "0", features = ["nightly"] }
+amethyst = { version = "0" } #, features = ["nightly"] }
 amethyst_test = { version = "0" }
 log = { version = "0", features = ["serde"] }
 dunce = { version = "1" }
 serde = { version = "1", features = ["derive"] }
 test-case = { version = "0" }
+cfg-if = { version = "0" }
 
 [features]
 default = ["vulkan"]

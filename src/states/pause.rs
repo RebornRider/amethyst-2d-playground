@@ -105,17 +105,21 @@ impl<'a> SimpleState for PauseMenuState {
                 self.exit_button = ui_finder.find(EXIT_BUTTON_ID);
             });
         }
-        #[cfg(test)]
-        return Trans::Quit;
-        Trans::None
+
+        cfg_if::cfg_if! {
+            if #[cfg(test)] {
+                Trans::Quit
+            }  else {
+                Trans::None
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{initialize_paths, setup_loader_for_test};
-    use amethyst::assets::{Directory, Loader};
+    use crate::setup_loader_for_test;
     use amethyst_test::AmethystApplication;
 
     #[test]
