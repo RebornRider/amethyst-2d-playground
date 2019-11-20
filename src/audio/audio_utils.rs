@@ -82,9 +82,12 @@ mod tests {
             .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
             })
             .with_assertion(|world| {
-                initialise_audio(world);
+                world.read_resource::<Music>();
+                world.read_resource::<Sounds>();
             })
             .run();
         assert!(test_result.is_ok());

@@ -128,6 +128,7 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
 fn setup_loader_for_test(world: &mut World) {
     use amethyst::assets::{Directory, Loader};
     let (_, _, assets_dir) = initialize_paths().unwrap();
+    let _dir = assets_dir.clone().to_str().unwrap_or_default();
     let mut loader = world.write_resource::<Loader>();
     loader.set_default_source(Directory::new(assets_dir.clone()));
 }

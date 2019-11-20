@@ -5,7 +5,10 @@ mod pong;
 mod util;
 mod welcome;
 
-pub use self::{credits::CreditsScreen, menu::MainMenu, pause::PauseMenuState, pong::Pong, util::delete_hierarchy, welcome::WelcomeScreen};
+pub use self::{
+    credits::CreditsScreen, menu::MainMenu, pause::PauseMenuState, pong::initialise_ball, pong::initialise_camera, pong::initialise_paddles, pong::load_sprite_sheet, pong::Pong,
+    util::delete_hierarchy, welcome::WelcomeScreen,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GameplayState {

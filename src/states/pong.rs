@@ -116,7 +116,8 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
                     // When timer expire, spawn the ball
                     let sprite_sheet_clone = self.sprite_sheet_handle.clone();
                     if let Some(sprite_sheet) = sprite_sheet_clone {
-                        initialise_ball(data.world, root_entity, sprite_sheet);
+                        use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
+                        initialise_ball(data.world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
                         #[cfg(test)]
                         return Trans::Quit;
                     }
@@ -155,7 +156,7 @@ impl<'a, 'b> Pong<'a, 'b> {
     }
 }
 
-fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
+pub fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     // Load the sprite sheet necessary to render the graphics.
     // The texture is the pixel data
     // `sprite_sheet` is the layout of the sprites on the image
@@ -178,7 +179,7 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
 }
 
 /// Initialise the camera.
-fn initialise_camera(world: &mut World, parent: Entity) {
+pub fn initialise_camera(world: &mut World, parent: Entity) {
     // Setup camera in a way that our screen covers whole arena and (0, 0) is in the bottom left.
     let mut transform = Transform::default();
     transform.set_translation_xyz(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5, 1.0);
@@ -192,7 +193,7 @@ fn initialise_camera(world: &mut World, parent: Entity) {
 }
 
 /// Initialises one paddle on the left, and one paddle on the right.
-fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
+pub fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
     use crate::{PADDLE_HEIGHT, PADDLE_VELOCITY, PADDLE_WIDTH};
 
     let mut left_transform = Transform::default();
@@ -239,12 +240,11 @@ fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Ha
 }
 
 /// Initialises one ball in the middle-ish of the arena.
-fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
-    use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
-
+pub fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>, radius: f32, velocity: [f32; 2], position: Option<[f32; 2]>) {
     // Create the translation.
     let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+    let initial_position = position.unwrap_or_else(|| [ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0]);
+    local_transform.set_translation_xyz(initial_position[0], initial_position[1], 0.0);
 
     // Assign the sprite for the ball
     let sprite_render = SpriteRender {
@@ -255,10 +255,7 @@ fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handl
     world
         .create_entity()
         .with(sprite_render)
-        .with(Ball {
-            radius: BALL_RADIUS,
-            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
-        })
+        .with(Ball { radius, velocity })
         .with(local_transform)
         .with(Parent { entity: parent })
         .build();

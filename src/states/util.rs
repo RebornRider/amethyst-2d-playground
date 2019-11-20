@@ -89,26 +89,4 @@ mod tests {
             .run();
         assert!(test_result.is_ok());
     }
-
-    #[test]
-    fn test_delete_two_related_entities_deleting_parent() {
-        amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_assertion(|world| {
-                let parent = world.create_entity().build();
-                assert!(world.is_alive(parent));
-
-                let child = world.create_entity().with(Parent { entity: parent }).build();
-                assert!(world.is_alive(child));
-
-                let result = delete_hierarchy(parent, world);
-
-                assert!(result.is_ok());
-                assert_eq!(world.is_alive(parent), false);
-                assert_eq!(world.is_alive(child), false);
-            })
-            .run();
-        assert!(test_result.is_ok());
-    }
 }
