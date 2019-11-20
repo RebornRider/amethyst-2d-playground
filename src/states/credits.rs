@@ -46,4 +46,37 @@ impl SimpleState for CreditsScreen {
             StateEvent::Ui(..) | StateEvent::Input(..) => Trans::None,
         }
     }
+
+    fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
+        #[cfg(test)]
+        return Trans::Quit;
+        Trans::None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{initialize_paths, setup_loader_for_test};
+    use amethyst::assets::{Directory, Loader};
+    use amethyst::audio::AudioBundle;
+    use amethyst::core::transform::TransformBundle;
+    use amethyst::core::Parent;
+    use amethyst::input::{InputBundle, StringBindings};
+    use amethyst::ui::{RenderUi, UiBundle};
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_credits_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(|| CreditsScreen::default())
+            .run();
+        assert!(test_result.is_ok());
+    }
 }
