@@ -135,19 +135,13 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
 impl<'a, 'b> Pong<'a, 'b> {
     fn initialize_gameplay_dispatcher(&mut self, world: &mut World) {
         if self.dispatcher.is_none() {
-            cfg_if::cfg_if! {
-                if #[cfg(test)] {
-                    let dispatcher_builder = DispatcherBuilder::new();
-                }  else {
-                    use amethyst::core::bundle::SystemBundle;
-                    use crate::systems::PongBundle;
+            use crate::systems::PongBundle;
+            use amethyst::core::bundle::SystemBundle;
 
-                    let mut dispatcher_builder = DispatcherBuilder::new();
-                    let pong_bundle = PongBundle {};
+            let mut dispatcher_builder = DispatcherBuilder::new();
+            let pong_bundle = PongBundle {};
 
-                    pong_bundle.build(world, &mut dispatcher_builder).expect("couldnt add pong bundle to dispatcher");
-                }
-            }
+            pong_bundle.build(world, &mut dispatcher_builder).expect("couldn't add pong bundle to dispatcher");
 
             // Build and setup the `Dispatcher`.
             let mut dispatcher = dispatcher_builder.build();
@@ -295,8 +289,16 @@ fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::audio::initialise_audio;
     use crate::setup_loader_for_test;
-    use amethyst::{assets::AssetStorage, core::transform::TransformBundle, input::StringBindings, window::ScreenDimensions};
+    use amethyst::audio::Source;
+    use amethyst::{
+        assets::AssetStorage,
+        audio::AudioBundle,
+        core::{Parent, TransformBundle},
+        renderer::{SpriteRender, SpriteSheet, Texture},
+    };
+    use amethyst::{input::StringBindings, window::ScreenDimensions};
     use amethyst_test::AmethystApplication;
 
     #[test]
@@ -309,11 +311,13 @@ mod tests {
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
 
-                let tex_storage = AssetStorage::<Texture>::default();
-                let ss_storage = AssetStorage::<SpriteSheet>::default();
-                world.insert(tex_storage);
-                world.insert(ss_storage);
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
                 world.register::<SpriteRender>();
                 world.register::<Paddle>();
                 world.register::<Ball>();
