@@ -5,6 +5,7 @@ mod systems;
 
 use amethyst::{
     assets::HotReloadBundle,
+    assets::{Directory, Loader},
     audio::{AudioBundle, DjSystemDesc},
     core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
     ecs::{Component, DenseVecStorage},
@@ -59,7 +60,7 @@ fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), E
             app_root.join("resources/config/input.ron")
         }
     };
-    let assets_dir = app_root.join("resources/");
+    let assets_dir = app_root.join("resources");
     Ok((display_config_path, key_bindings_path, assets_dir))
 }
 
@@ -122,6 +123,15 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
     )
+}
+
+fn setup_loader_for_test(world: &mut World) {
+    let (_, _, mut assets_dir) = initialize_paths().unwrap();
+
+    let dir = assets_dir.to_str().unwrap();
+
+    let mut loader = world.write_resource::<Loader>();
+    loader.set_default_source(Directory::new(assets_dir.clone()));
 }
 
 pub struct Ball {

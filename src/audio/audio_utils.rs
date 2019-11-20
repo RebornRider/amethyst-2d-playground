@@ -66,7 +66,8 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 #[cfg(test)]
 mod tests {
     use super::*;
-    use amethyst::audio::output::init_output;
+    use crate::{initialize_paths, setup_loader_for_test};
+    use amethyst::assets::{Directory, Loader};
     use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
@@ -77,6 +78,9 @@ mod tests {
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
             .with_assertion(|world| {
                 initialise_audio(world);
             })

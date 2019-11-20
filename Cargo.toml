@@ -11,7 +11,7 @@ keywords = ["game"]
 categories = ["games"]
 
 [dependencies]
-amethyst = { version = "0" }
+amethyst = { version = "0"}
 amethyst_test = { version = "0" }
 log = { version = "0", features = ["serde"] }
 dunce = { version = "1" }
