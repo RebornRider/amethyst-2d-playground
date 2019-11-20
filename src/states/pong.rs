@@ -139,9 +139,7 @@ impl<'a, 'b> Pong<'a, 'b> {
             use amethyst::core::bundle::SystemBundle;
 
             let mut dispatcher_builder = DispatcherBuilder::new();
-            let pong_bundle = PongBundle {};
-
-            pong_bundle.build(world, &mut dispatcher_builder).expect("couldn't add pong bundle to dispatcher");
+            PongBundle::default().build(world, &mut dispatcher_builder).expect("couldn't add pong bundle to dispatcher");
 
             // Build and setup the `Dispatcher`.
             let mut dispatcher = dispatcher_builder.build();

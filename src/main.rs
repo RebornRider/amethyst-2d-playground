@@ -1,4 +1,3 @@
-//! Pong
 mod audio;
 mod states;
 mod systems;
@@ -43,8 +42,7 @@ const AUDIO_SCORE: &str = "audio/score.ogg";
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(amethyst::LoggerConfig::default());
-    let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
-    let mut game = build_game(display_config_path, key_bindings_path, assets_dir)?;
+    let mut game = build_game()?;
     game.run();
     Ok(())
 }
@@ -74,11 +72,8 @@ fn initialize_app_root() -> Result<path::PathBuf, Error> {
     Ok(app_root)
 }
 
-fn build_game(
-    display_config_path: path::PathBuf,
-    key_bindings_path: path::PathBuf,
-    assets_dir: path::PathBuf,
-) -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+    let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
     let game_data = build_game_data(display_config_path, key_bindings_path)?;
     let game = Application::build(assets_dir, states::WelcomeScreen::default())?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
@@ -155,17 +150,6 @@ pub struct Paddle {
     pub height: f32,
 }
 
-impl Paddle {
-    pub const fn new(side: Side) -> Self {
-        Self {
-            velocity: 1.0,
-            side,
-            width: 1.0,
-            height: 1.0,
-        }
-    }
-}
-
 impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
@@ -185,6 +169,7 @@ impl ScoreBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
 
     #[test]
     fn score_board_initialisation() {
@@ -192,6 +177,11 @@ mod tests {
         assert_eq!(scoreboard.score_left, 0);
         assert_eq!(scoreboard.score_right, 0);
         assert_eq!(scoreboard.score_right, scoreboard.score_left);
+    }
+
+    #[test]
+    fn build_game_no_run() {
+        build_game().expect("could not build game");
     }
 
     #[test]
@@ -214,6 +204,20 @@ mod tests {
     fn validate_game_data_builder() -> amethyst::Result<()> {
         let (display_config_path, key_bindings_path, _) = initialize_paths()?;
         build_game_data(display_config_path, key_bindings_path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn validate_game_data_builder_garbage_key_bindings_path() -> amethyst::Result<()> {
+        let (_, key_bindings_path, _) = initialize_paths()?;
+        build_game_data(PathBuf::new(), key_bindings_path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn validate_game_data_builder_garbage_display_config_path() -> amethyst::Result<()> {
+        let (display_config_path, _, _) = initialize_paths()?;
+        build_game_data(display_config_path, PathBuf::new())?;
         Ok(())
     }
 }

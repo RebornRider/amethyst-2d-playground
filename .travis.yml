@@ -39,4 +39,4 @@ addons:
 script:
   - cargo clean
   - cargo build --verbose --all --all-targets
-  - cargo test --verbose --all --no-run
+  - cargo test --verbose --all
