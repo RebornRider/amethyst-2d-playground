@@ -1,11 +1,11 @@
 use crate::{
     states::{delete_hierarchy, GameplayState, PauseMenuState},
-    systems::{PongBundle, ScoreText},
+    systems::ScoreText,
     Ball, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
 };
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
-    core::{bundle::SystemBundle, timing::Time, transform::Transform, Parent},
+    core::{timing::Time, transform::Transform, Parent},
     ecs::{
         prelude::{Entity, World, WorldExt},
         Dispatcher, DispatcherBuilder,
@@ -30,18 +30,12 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         *data.world.write_resource::<GameplayState>() = GameplayState::Running;
 
-        let pong_bundle = PongBundle {};
-        // Create the `DispatcherBuilder` and register some `System`s that should only run for this `State`.
-        let mut dispatcher_builder = DispatcherBuilder::new();
-        pong_bundle.build(data.world, &mut dispatcher_builder).expect("couldnt add pong bundle to dispatcher");
-        // Build and setup the `Dispatcher`.
-        let mut dispatcher = dispatcher_builder.build();
-        dispatcher.setup(data.world);
-        self.dispatcher = Some(dispatcher);
+        self.initialize_gameplay_dispatcher(data.world);
 
         // Wait one second before spawning the ball.
         self.ball_spawn_timer.replace(1.0);
 
+        // Initialize roots
         self.root_entity = Some(data.world.create_entity().with(Transform::default()).build());
         self.ui_root = Some(data.world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
 
@@ -61,15 +55,20 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
     }
 
     fn on_stop(&mut self, data: StateData<'_, GameData<'_, '_>>) {
-        if let Some(entity) = self.root_entity {
+        if let Some(entity) = self.root_entity.take() {
             delete_hierarchy(entity, data.world).expect("Failed to remove Pong entities");
         }
-        self.root_entity = None;
 
-        if let Some(entity) = self.ui_root {
+        if let Some(entity) = self.ui_root.take() {
             delete_hierarchy(entity, data.world).expect("Failed to remove Pong HUD entities");
         }
-        self.ui_root = None;
+
+        if let Some(dispatcher) = self.dispatcher.take() {
+            dispatcher.dispose(data.world);
+        }
+
+        self.sprite_sheet_handle = None;
+        self.ball_spawn_timer = None;
     }
 
     fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) {
@@ -117,7 +116,10 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
                     // When timer expire, spawn the ball
                     let sprite_sheet_clone = self.sprite_sheet_handle.clone();
                     if let Some(sprite_sheet) = sprite_sheet_clone {
-                        initialise_ball(data.world, root_entity, sprite_sheet);
+                        use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
+                        initialise_ball(data.world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
+                        #[cfg(test)]
+                        return Trans::Quit;
                     }
                 }
             } else {
@@ -130,7 +132,26 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
     }
 }
 
-fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
+impl<'a, 'b> Pong<'a, 'b> {
+    fn initialize_gameplay_dispatcher(&mut self, world: &mut World) {
+        if self.dispatcher.is_none() {
+            use crate::systems::PongBundle;
+            use amethyst::core::bundle::SystemBundle;
+
+            let mut dispatcher_builder = DispatcherBuilder::new();
+            let pong_bundle = PongBundle {};
+
+            pong_bundle.build(world, &mut dispatcher_builder).expect("couldn't add pong bundle to dispatcher");
+
+            // Build and setup the `Dispatcher`.
+            let mut dispatcher = dispatcher_builder.build();
+            dispatcher.setup(world);
+            self.dispatcher = Some(dispatcher);
+        }
+    }
+}
+
+pub fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     // Load the sprite sheet necessary to render the graphics.
     // The texture is the pixel data
     // `sprite_sheet` is the layout of the sprites on the image
@@ -153,7 +174,7 @@ fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
 }
 
 /// Initialise the camera.
-fn initialise_camera(world: &mut World, parent: Entity) {
+pub fn initialise_camera(world: &mut World, parent: Entity) {
     // Setup camera in a way that our screen covers whole arena and (0, 0) is in the bottom left.
     let mut transform = Transform::default();
     transform.set_translation_xyz(ARENA_WIDTH * 0.5, ARENA_HEIGHT * 0.5, 1.0);
@@ -167,7 +188,7 @@ fn initialise_camera(world: &mut World, parent: Entity) {
 }
 
 /// Initialises one paddle on the left, and one paddle on the right.
-fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
+pub fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
     use crate::{PADDLE_HEIGHT, PADDLE_VELOCITY, PADDLE_WIDTH};
 
     let mut left_transform = Transform::default();
@@ -214,12 +235,11 @@ fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle: Ha
 }
 
 /// Initialises one ball in the middle-ish of the arena.
-fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>) {
-    use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
-
+pub fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>, radius: f32, velocity: [f32; 2], position: Option<[f32; 2]>) {
     // Create the translation.
     let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0, 0.0);
+    let initial_position = position.unwrap_or_else(|| [ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0]);
+    local_transform.set_translation_xyz(initial_position[0], initial_position[1], 0.0);
 
     // Assign the sprite for the ball
     let sprite_render = SpriteRender {
@@ -230,10 +250,7 @@ fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handl
     world
         .create_entity()
         .with(sprite_render)
-        .with(Ball {
-            radius: BALL_RADIUS,
-            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
-        })
+        .with(Ball { radius, velocity })
         .with(local_transform)
         .with(Parent { entity: parent })
         .build();
@@ -268,4 +285,46 @@ fn initialise_score(world: &mut World, parent: Entity) {
         .with(Parent { entity: parent })
         .build();
     world.insert(ScoreText { p1_score, p2_score, fps_display });
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::audio::initialise_audio;
+    use crate::setup_loader_for_test;
+    use amethyst::audio::Source;
+    use amethyst::{
+        assets::AssetStorage,
+        audio::AudioBundle,
+        core::{Parent, TransformBundle},
+        renderer::{SpriteRender, SpriteSheet, Texture},
+    };
+    use amethyst::{input::StringBindings, window::ScreenDimensions};
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_pong_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| Pong::default())
+            .run();
+        assert!(test_result.is_ok());
+    }
 }

@@ -59,7 +59,7 @@ fn initialize_paths() -> Result<(path::PathBuf, path::PathBuf, path::PathBuf), E
             app_root.join("resources/config/input.ron")
         }
     };
-    let assets_dir = app_root.join("resources/");
+    let assets_dir = app_root.join("resources");
     Ok((display_config_path, key_bindings_path, assets_dir))
 }
 
@@ -122,6 +122,15 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
     )
+}
+
+#[cfg(test)]
+fn setup_loader_for_test(world: &mut World) {
+    use amethyst::assets::{Directory, Loader};
+    let (_, _, assets_dir) = initialize_paths().unwrap();
+    let _dir = assets_dir.clone().to_str().unwrap_or_default();
+    let mut loader = world.write_resource::<Loader>();
+    loader.set_default_source(Directory::new(assets_dir.clone()));
 }
 
 pub struct Ball {

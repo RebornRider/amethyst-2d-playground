@@ -90,6 +90,35 @@ impl SimpleState for MainMenu {
             });
         }
 
-        Trans::None
+        cfg_if::cfg_if! {
+            if #[cfg(test)] {
+                Trans::Quit
+            }  else {
+                Trans::None
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::setup_loader_for_test;
+    use amethyst::audio::AudioBundle;
+    use amethyst::core::transform::TransformBundle;
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_main_menu_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(|| MainMenu::default())
+            .run();
+        assert!(test_result.is_ok());
     }
 }

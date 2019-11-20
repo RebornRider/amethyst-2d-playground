@@ -74,3 +74,173 @@ impl<'s> System<'s> for BounceSystem {
 fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
     x >= left && x <= right && y >= bottom && y <= top
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        audio::initialise_audio,
+        setup_loader_for_test,
+        states::{initialise_ball, initialise_paddles, load_sprite_sheet},
+    };
+    use amethyst::{
+        assets::AssetStorage,
+        audio::AudioBundle,
+        core::{Parent, TransformBundle},
+        ecs::prelude::WorldExt,
+        prelude::Builder,
+        renderer::{SpriteRender, SpriteSheet, Texture},
+    };
+    use amethyst_test::AmethystApplication;
+    use assert_approx_eq::assert_approx_eq;
+    use test_case::test_case;
+
+    #[test_case(0.0, 0.0, 0.0, 0.0, 0.0, 0.0 => true)]
+    #[test_case(0.0, 0.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(1.0, 0.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(0.0, 1.0, -1.0, -1.0, 1.0, 1.0 => true)]
+    #[test_case(-10.0, 0.0, -10.0, -10.0, 10.0, 10.0 => true)]
+    #[test_case(0.0, -10.0, -10.0, -10.0, 10.0, 10.0 => true)]
+    #[test_case(2.0, 0.0, -1.0, -1.0, 1.0, 1.0 => false)]
+    #[test_case(0.0, 2.0, -1.0, -1.0, 1.0, 1.0 => false)]
+    #[test_case(-20.0, 0.0, -10.0, -10.0, 10.0, 10.0 => false)]
+    #[test_case(0.0, -20.0, -10.0, -10.0, 10.0, 10.0 => false)]
+    fn test_point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -> bool {
+        point_in_rect(x, y, left, bottom, right, top)
+    }
+
+    #[test]
+    fn basic_bounce_system_setup() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                let tex_storage = AssetStorage::<Texture>::default();
+                let ss_storage = AssetStorage::<SpriteSheet>::default();
+                world.insert(tex_storage);
+                world.insert(ss_storage);
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+
+                // Initialize paddles and ball
+                let root_entity = Some(world.create_entity().with(Transform::default()).build());
+                let sprite_sheet_handle = Some(load_sprite_sheet(world));
+                if let Some(root_entity) = root_entity {
+                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                        initialise_paddles(world, root_entity, sprite_sheet);
+                    }
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
+                        use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
+                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
+                    }
+                }
+            })
+            .with_system_single(BounceSystem, "collision_system", &[])
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn paddle_reflect() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                let tex_storage = AssetStorage::<Texture>::default();
+                let ss_storage = AssetStorage::<SpriteSheet>::default();
+                world.insert(tex_storage);
+                world.insert(ss_storage);
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+
+                // Initialize paddles and ball
+                let root_entity = Some(world.create_entity().with(Transform::default()).build());
+                let sprite_sheet_handle = Some(load_sprite_sheet(world));
+                if let Some(root_entity) = root_entity {
+                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                        initialise_paddles(world, root_entity, sprite_sheet);
+                    }
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
+                        use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
+                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [-1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                    }
+                }
+            })
+            .with_system_single(BounceSystem, "collision_system", &[])
+            .with_assertion(|world| {
+                let balls = world.read_storage::<Ball>();
+                let transforms = world.read_storage::<Transform>();
+                assert_eq!(1, balls.count());
+
+                for (ball, _transform) in (&balls, &transforms).join() {
+                    assert_approx_eq!(ball.velocity[0], 1.0);
+                }
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn no_paddle_reflect_if_going_into_direction_of_paddle() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                let tex_storage = AssetStorage::<Texture>::default();
+                let ss_storage = AssetStorage::<SpriteSheet>::default();
+                world.insert(tex_storage);
+                world.insert(ss_storage);
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+
+                // Initialize paddles and ball
+                let root_entity = Some(world.create_entity().with(Transform::default()).build());
+                let sprite_sheet_handle = Some(load_sprite_sheet(world));
+                if let Some(root_entity) = root_entity {
+                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                        initialise_paddles(world, root_entity, sprite_sheet);
+                    }
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
+                        use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
+                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                    }
+                }
+            })
+            .with_system_single(BounceSystem, "collision_system", &[])
+            .with_assertion(|world| {
+                let balls = world.read_storage::<Ball>();
+                let transforms = world.read_storage::<Transform>();
+                assert_eq!(1, balls.count());
+
+                for (ball, _transform) in (&balls, &transforms).join() {
+                    assert_approx_eq!(ball.velocity[0], 1.0);
+                }
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+}

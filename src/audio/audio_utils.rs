@@ -1,8 +1,9 @@
 use amethyst::{
     assets::{AssetStorage, Loader},
-    audio::{output::Output, AudioSink, OggFormat, Source, SourceHandle},
+    audio::{output::Output, OggFormat, Source, SourceHandle},
     ecs::{World, WorldExt},
 };
+
 use std::{iter::Cycle, vec::IntoIter};
 
 pub struct Sounds {
@@ -27,9 +28,6 @@ pub fn initialise_audio(world: &mut World) {
     let (sound_effects, music) = {
         let loader = world.read_resource::<Loader>();
 
-        let mut sink = world.write_resource::<AudioSink>();
-        sink.set_volume(0.25); // Music is a bit loud, reduce the volume.
-
         let music = AUDIO_MUSIC
             .iter()
             .map(|file| load_audio_track(&loader, world, file))
@@ -52,11 +50,47 @@ pub fn initialise_audio(world: &mut World) {
     world.insert(music);
 }
 
+#[cfg(not(test))]
+pub fn set_sink_volume(world: &mut World, volume: f32) {
+    use amethyst::audio::AudioSink;
+    let mut sink = world.write_resource::<AudioSink>();
+    sink.set_volume(volume);
+}
+
 /// Plays the bounce sound when a ball hits a side or a paddle.
 pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Option<&Output>) {
     if let Some(output) = output.as_ref() {
         if let Some(sound) = storage.get(&sounds.bounce_sfx) {
+            #[cfg(not(test))]
             output.play_once(sound, 1.0);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::setup_loader_for_test;
+    use amethyst::audio::AudioBundle;
+    use amethyst::core::transform::TransformBundle;
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_initialise_audio() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(AudioBundle::default())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+            })
+            .with_assertion(|world| {
+                world.read_resource::<Music>();
+                world.read_resource::<Sounds>();
+            })
+            .run();
+        assert!(test_result.is_ok());
     }
 }

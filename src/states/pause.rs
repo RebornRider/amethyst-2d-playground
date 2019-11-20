@@ -105,6 +105,32 @@ impl<'a> SimpleState for PauseMenuState {
                 self.exit_button = ui_finder.find(EXIT_BUTTON_ID);
             });
         }
-        Trans::None
+
+        cfg_if::cfg_if! {
+            if #[cfg(test)] {
+                Trans::Quit
+            }  else {
+                Trans::None
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::setup_loader_for_test;
+    use amethyst_test::AmethystApplication;
+
+    #[test]
+    fn test_pause_menu_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(|| PauseMenuState::default())
+            .run();
+        assert!(test_result.is_ok());
     }
 }
