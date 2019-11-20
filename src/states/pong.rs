@@ -256,7 +256,7 @@ pub fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: H
         .build();
 }
 
-fn initialise_score(world: &mut World, parent: Entity) {
+pub fn initialise_score(world: &mut World, parent: Entity) {
     let font = world.read_resource::<Loader>().load("font/square.ttf", TtfFormat, (), &world.read_resource());
     let p1_transform = UiTransform::new("P1".to_string(), Anchor::TopMiddle, Anchor::Middle, -50., -50., 1., 200., 50.);
 
@@ -289,16 +289,15 @@ fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::audio::initialise_audio;
-    use crate::setup_loader_for_test;
-    use amethyst::audio::Source;
+    use crate::{audio::initialise_audio, setup_loader_for_test};
     use amethyst::{
         assets::AssetStorage,
-        audio::AudioBundle,
+        audio::Source,
         core::{Parent, TransformBundle},
+        input::StringBindings,
         renderer::{SpriteRender, SpriteSheet, Texture},
+        window::ScreenDimensions,
     };
-    use amethyst::{input::StringBindings, window::ScreenDimensions};
     use amethyst_test::AmethystApplication;
 
     #[test]
@@ -323,7 +322,7 @@ mod tests {
                 world.register::<Ball>();
                 world.register::<Camera>();
             })
-            .with_state(|| Pong::default())
+            .with_state(Pong::default)
             .run();
         assert!(test_result.is_ok());
     }

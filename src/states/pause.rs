@@ -106,12 +106,10 @@ impl<'a> SimpleState for PauseMenuState {
             });
         }
 
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                Trans::Quit
-            }  else {
-                Trans::None
-            }
+        if cfg!(test) {
+            Trans::Quit
+        } else {
+            Trans::None
         }
     }
 }
@@ -129,7 +127,7 @@ mod tests {
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })
-            .with_state(|| PauseMenuState::default())
+            .with_state(PauseMenuState::default)
             .run();
         assert!(test_result.is_ok());
     }

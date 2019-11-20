@@ -1,4 +1,5 @@
 Unwanted
+clippy::bool_comparison
 clippy::comparison_chain
 clippy::float_arithmetic
 clippy::implicit_return

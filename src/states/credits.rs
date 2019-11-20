@@ -48,12 +48,10 @@ impl SimpleState for CreditsScreen {
     }
 
     fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                Trans::Quit
-            }  else {
-                Trans::None
-            }
+        if cfg!(test) {
+            Trans::Quit
+        } else {
+            Trans::None
         }
     }
 }
@@ -75,7 +73,7 @@ mod tests {
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })
-            .with_state(|| CreditsScreen::default())
+            .with_state(CreditsScreen::default)
             .run();
         assert!(test_result.is_ok());
     }

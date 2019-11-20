@@ -6,13 +6,9 @@ use amethyst::{
     winit::{MouseButton, VirtualKeyCode},
 };
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-    use crate::audio::{initialise_audio};
-    }  else {
-    use crate::audio::{initialise_audio, set_sink_volume};
-    }
-}
+use crate::audio::initialise_audio;
+#[cfg(not(test))]
+use crate::audio::set_sink_volume;
 
 use crate::states::{util::delete_hierarchy, GameplayState};
 
@@ -56,12 +52,10 @@ impl SimpleState for WelcomeScreen {
     }
 
     fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                Trans::Quit
-            }  else {
-                Trans::None
-            }
+        if cfg!(test) {
+            Trans::Quit
+        } else {
+            Trans::None
         }
     }
 }
@@ -83,7 +77,7 @@ mod tests {
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })
-            .with_state(|| WelcomeScreen::default())
+            .with_state(WelcomeScreen::default)
             .run();
         assert!(test_result.is_ok());
     }
