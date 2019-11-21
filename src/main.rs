@@ -106,9 +106,7 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
         .with_bundle(TransformBundle::new())?
         .with_bundle(HotReloadBundle::default())?
         .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-        .with_bundle(AudioBundle::default())?
         .with_bundle(FpsCounterBundle::default())?
-        .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[])
         .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
         .with_bundle(UiBundle::<StringBindings>::new())?
         .with_bundle(
