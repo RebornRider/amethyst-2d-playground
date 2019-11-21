@@ -81,7 +81,11 @@ impl SimpleState for MainMenu {
         // only search for buttons if they have not been found yet
         let StateData { world, .. } = state_data;
 
-        if self.button_start.is_none() || self.button_load.is_none() || self.button_options.is_none() || self.button_credits.is_none() {
+        if self.button_start.is_none()
+            || self.button_load.is_none()
+            || self.button_options.is_none()
+            || self.button_credits.is_none()
+        {
             world.exec(|ui_finder: UiFinder<'_>| {
                 self.button_start = ui_finder.find(BUTTON_START);
                 self.button_load = ui_finder.find(BUTTON_LOAD);

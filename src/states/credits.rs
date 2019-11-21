@@ -36,7 +36,8 @@ impl SimpleState for CreditsScreen {
                 if is_close_requested(&event) {
                     log::info!("[Trans::Quit] Quitting Application!");
                     Trans::Quit
-                } else if is_key_down(&event, VirtualKeyCode::Escape) || is_mouse_button_down(&event, MouseButton::Left) {
+                } else if is_key_down(&event, VirtualKeyCode::Escape) || is_mouse_button_down(&event, MouseButton::Left)
+                {
                     log::info!("[Trans::Switch] Switching to MainMenu!");
                     Trans::Switch(Box::new(MainMenu::default()))
                 } else {

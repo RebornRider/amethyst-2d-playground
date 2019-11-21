@@ -22,7 +22,10 @@ pub struct WelcomeScreen {
 impl SimpleState for WelcomeScreen {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         data.world.insert(GameplayState::Paused);
-        self.ui_handle = Some(data.world.exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())));
+        self.ui_handle = Some(
+            data.world
+                .exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())),
+        );
 
         initialise_audio(data.world);
         #[cfg(not(test))]
@@ -78,20 +81,17 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |_world| unsafe {
-                        Event::WindowEvent {
-                            window_id: WindowId::dummy(),
-                            event: WindowEvent::MouseInput {
-                                device_id: DeviceId::dummy(),
-                                state: ElementState::Pressed,
-                                button: MouseButton::Left,
-                                modifiers: Default::default(),
-                            },
-                        }
-                    },
-                )
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::MouseInput {
+                            device_id: DeviceId::dummy(),
+                            state: ElementState::Pressed,
+                            button: MouseButton::Left,
+                            modifiers: Default::default(),
+                        },
+                    }
+                })
             })
             .run();
         assert!(test_result.is_ok());
@@ -107,15 +107,12 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |_world| unsafe {
-                        Event::WindowEvent {
-                            window_id: WindowId::dummy(),
-                            event: WindowEvent::HoveredFileCancelled,
-                        }
-                    },
-                )
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::HoveredFileCancelled,
+                    }
+                })
             })
             .run();
         assert!(test_result.is_ok());
@@ -131,23 +128,20 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |_world| unsafe {
-                        Event::WindowEvent {
-                            window_id: WindowId::dummy(),
-                            event: WindowEvent::KeyboardInput {
-                                device_id: DeviceId::dummy(),
-                                input: KeyboardInput {
-                                    scancode: 0,
-                                    state: ElementState::Pressed,
-                                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                                    modifiers: Default::default(),
-                                },
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::KeyboardInput {
+                            device_id: DeviceId::dummy(),
+                            input: KeyboardInput {
+                                scancode: 0,
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                modifiers: Default::default(),
                             },
-                        }
-                    },
-                )
+                        },
+                    }
+                })
             })
             .run();
         assert!(test_result.is_ok());
@@ -163,15 +157,12 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |_world| unsafe {
-                        Event::WindowEvent {
-                            window_id: WindowId::dummy(),
-                            event: WindowEvent::CloseRequested,
-                        }
-                    },
-                )
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::CloseRequested,
+                    }
+                })
             })
             .run();
         assert!(test_result.is_ok());
@@ -187,10 +178,8 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()),
-                )
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default()))
+                    .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
             })
             .run();
         assert!(test_result.is_ok());
@@ -206,10 +195,12 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::new(
-                    |_world| Box::new(WelcomeScreen::default()),
-                    |_world| InputEvent::<StringBindings>::CursorMoved { delta_x: 0.0, delta_y: 0.0 },
-                )
+                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| InputEvent::<
+                    StringBindings,
+                >::CursorMoved {
+                    delta_x: 0.0,
+                    delta_y: 0.0,
+                })
             })
             .run();
         assert!(test_result.is_ok());

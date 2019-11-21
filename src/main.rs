@@ -81,7 +81,10 @@ fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, 
     Ok(game)
 }
 
-fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::PathBuf) -> Result<GameDataBuilder<'static, 'static>, Error> {
+fn build_game_data(
+    display_config_path: path::PathBuf,
+    key_bindings_path: path::PathBuf,
+) -> Result<GameDataBuilder<'static, 'static>, Error> {
     use log::warn;
     if key_bindings_path.as_path().exists() == false || key_bindings_path.as_path().is_file() == false {
         let path = key_bindings_path.into_os_string();
@@ -100,7 +103,11 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
         // Audio breaks windows test CI
         false => GameDataBuilder::default()
             .with_bundle(AudioBundle::default())?
-            .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[]),
+            .with_system_desc(
+                DjSystemDesc::new(|music: &mut Music| music.music.next()),
+                "dj_system",
+                &[],
+            ),
     };
     builder
         .with_bundle(TransformBundle::new())?
@@ -169,7 +176,10 @@ pub struct ScoreBoard {
 
 impl ScoreBoard {
     pub const fn new() -> Self {
-        Self { score_left: 0, score_right: 0 }
+        Self {
+            score_left: 0,
+            score_right: 0,
+        }
     }
 }
 
@@ -184,8 +194,8 @@ mod tests {
         MockEventT: Send + Sync + 'static,
         StateEventT: Send + Sync + 'static,
     {
-        mock_events: Box<dyn Fn(&mut World) -> MockEventT>,
-        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<GameDataT, StateEventT>> + Send>,
+        mock_events: Vec<Box<dyn Fn(&mut World) -> MockEventT>>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<GameDataT, StateEventT>>>,
     }
 
     impl<MockEventT, GameDataT, E> SendMockEvents<MockEventT, GameDataT, E>
@@ -193,15 +203,22 @@ mod tests {
         MockEventT: Send + Sync + 'static,
         E: Send + Sync + 'static,
     {
-        pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
+        pub fn to_state<FnT>(next_state: FnT) -> Self
         where
-            Fsme: Fn(&mut World) -> MockEventT + Send + 'static,
-            Fns: Fn(&mut World) -> Box<dyn State<GameDataT, E>> + Send + 'static,
+            FnT: Fn(&mut World) -> Box<dyn State<GameDataT, E>> + Send + Sync + 'static,
         {
             Self {
-                mock_events: Box::new(mock_events),
+                mock_events: vec![],
                 next_state: Box::new(next_state),
             }
+        }
+
+        pub fn with_event<FnT>(mut self, event: FnT) -> Self
+        where
+            FnT: Fn(&mut World) -> MockEventT + Send + Sync + 'static,
+        {
+            self.mock_events.push(Box::new(event));
+            self
         }
     }
 
@@ -211,16 +228,18 @@ mod tests {
         E: Send + Sync + 'static,
     {
         fn update(&mut self, data: StateData<'_, GameDataT>) -> Trans<GameDataT, E> {
-            {
-                let event = (self.mock_events)(data.world);
-                let mut events: (Write<EventChannel<MockEventT>>) = data.world.system_data();
-                events.single_write(event);
-            }
-
             Trans::Switch((self.next_state)(data.world))
         }
 
-        fn shadow_update(&mut self, data: StateData<'_, GameDataT>) {}
+        fn shadow_update(&mut self, data: StateData<'_, GameDataT>) {
+            {
+                if let Some(mock_event) = self.mock_events.pop() {
+                    let event = (mock_event)(data.world);
+                    let mut events: (Write<EventChannel<MockEventT>>) = data.world.system_data();
+                    events.single_write(event);
+                }
+            }
+        }
     }
 
     #[test]

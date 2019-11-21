@@ -37,7 +37,9 @@ impl<'s> System<'s> for BounceSystem {
             let ball_y = transform.translation().y;
 
             // Bounce at the top or the bottom of the arena.
-            if (ball_y <= ball.radius && ball.velocity[1] < 0.0) || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0) {
+            if (ball_y <= ball.radius && ball.velocity[1] < 0.0)
+                || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0)
+            {
                 ball.velocity[1] = -ball.velocity[1];
                 play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
             }
@@ -59,7 +61,8 @@ impl<'s> System<'s> for BounceSystem {
                     paddle_y - ball.radius,
                     paddle_x + (paddle.width + ball.radius),
                     paddle_y + (paddle.height + ball.radius),
-                ) && ((paddle.side == Side::Left && ball.velocity[0] < 0.0) || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
+                ) && ((paddle.side == Side::Left && ball.velocity[0] < 0.0)
+                    || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
                 {
                     ball.velocity[0] = -ball.velocity[0];
                     play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
@@ -137,7 +140,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+                            None,
+                        );
                     }
                 }
             })
@@ -175,7 +185,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [-1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [-1.0, BALL_VELOCITY_Y],
+                            Some([0.0, ARENA_HEIGHT / 2.0]),
+                        );
                     }
                 }
             })
@@ -222,7 +239,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [1.0, BALL_VELOCITY_Y],
+                            Some([0.0, ARENA_HEIGHT / 2.0]),
+                        );
                     }
                 }
             })
@@ -269,7 +293,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_WIDTH, BALL_RADIUS, BALL_VELOCITY_X};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, -10.0], Some([ARENA_WIDTH / 2.0, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [BALL_VELOCITY_X, -10.0],
+                            Some([ARENA_WIDTH / 2.0, 0.0]),
+                        );
                     }
                 }
             })

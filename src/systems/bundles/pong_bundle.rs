@@ -16,10 +16,26 @@ pub struct PongBundle;
 
 impl<'a, 'b> SystemBundle<'a, 'b> for PongBundle {
     fn build(self, _world: &mut World, builder: &mut DispatcherBuilder<'a, 'b>) -> Result<(), Error> {
-        builder.add(PaddleSystem.pausable(states::GameplayState::Running), "paddle_system", &[]);
-        builder.add(MoveBallsSystem.pausable(states::GameplayState::Running), "ball_system", &[]);
-        builder.add(BounceSystem.pausable(states::GameplayState::Running), "collision_system", &["paddle_system", "ball_system"]);
-        builder.add(WinnerSystem.pausable(states::GameplayState::Running), "winner_system", &["paddle_system", "ball_system"]);
+        builder.add(
+            PaddleSystem.pausable(states::GameplayState::Running),
+            "paddle_system",
+            &[],
+        );
+        builder.add(
+            MoveBallsSystem.pausable(states::GameplayState::Running),
+            "ball_system",
+            &[],
+        );
+        builder.add(
+            BounceSystem.pausable(states::GameplayState::Running),
+            "collision_system",
+            &["paddle_system", "ball_system"],
+        );
+        builder.add(
+            WinnerSystem.pausable(states::GameplayState::Running),
+            "winner_system",
+            &["paddle_system", "ball_system"],
+        );
         Ok(())
     }
 }

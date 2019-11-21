@@ -28,7 +28,10 @@ impl<'s> System<'s> for WinnerSystem {
         Read<'s, FpsCounter>,
     );
 
-    fn run(&mut self, (mut balls, mut transforms, mut text, mut score_board, storage, sounds, score_text, audio_output, fps_counter): Self::SystemData) {
+    fn run(
+        &mut self,
+        (mut balls, mut transforms, mut text, mut score_board, storage, sounds, score_text, audio_output, fps_counter): Self::SystemData,
+    ) {
         if let Some(text) = text.get_mut(score_text.fps_display) {
             let fps = fps_counter.sampled_fps();
             text.text = format!("FPS: {:.*}", 2, fps);
@@ -141,7 +144,14 @@ mod tests {
                 let sprite_sheet_handle = Some(load_sprite_sheet(world));
                 if let Some(root_entity) = root_entity {
                     if let Some(sprite_sheet) = sprite_sheet_handle {
-                        initialise_ball(world, root_entity, sprite_sheet, crate::BALL_RADIUS, [-10.0, 0.0], Some([0.0, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            crate::BALL_RADIUS,
+                            [-10.0, 0.0],
+                            Some([0.0, 0.0]),
+                        );
                     }
                 }
             })
@@ -194,7 +204,14 @@ mod tests {
                 let sprite_sheet_handle = Some(load_sprite_sheet(world));
                 if let Some(root_entity) = root_entity {
                     if let Some(sprite_sheet) = sprite_sheet_handle {
-                        initialise_ball(world, root_entity, sprite_sheet, crate::BALL_RADIUS, [10.0, 0.0], Some([crate::ARENA_WIDTH, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            crate::BALL_RADIUS,
+                            [10.0, 0.0],
+                            Some([crate::ARENA_WIDTH, 0.0]),
+                        );
                     }
                 }
             })

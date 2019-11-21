@@ -12,7 +12,12 @@ use amethyst::{
 pub struct PaddleSystem;
 
 impl<'s> System<'s> for PaddleSystem {
-    type SystemData = (ReadStorage<'s, Paddle>, WriteStorage<'s, Transform>, Read<'s, Time>, Read<'s, InputHandler<StringBindings>>);
+    type SystemData = (
+        ReadStorage<'s, Paddle>,
+        WriteStorage<'s, Transform>,
+        Read<'s, Time>,
+        Read<'s, InputHandler<StringBindings>>,
+    );
 
     fn run(&mut self, (paddles, mut transforms, time, input): Self::SystemData) {
         use crate::Side;
@@ -31,7 +36,11 @@ impl<'s> System<'s> for PaddleSystem {
 
                 // We make sure the paddle remains in the arena.
                 let paddle_y = transform.translation().y;
-                transform.set_translation_y(paddle_y.max(paddle.height * 0.5).min(ARENA_HEIGHT - paddle.height * 0.5));
+                transform.set_translation_y(
+                    paddle_y
+                        .max(paddle.height * 0.5)
+                        .min(ARENA_HEIGHT - paddle.height * 0.5),
+                );
             }
         }
     }
