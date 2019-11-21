@@ -1,18 +1,17 @@
-use amethyst::{ecs::prelude::Entity,
-               input::{is_close_requested,
-                       is_key_down,
-                       is_mouse_button_down},
-               prelude::*,
-               ui::UiCreator,
-               winit::{MouseButton,
-                       VirtualKeyCode}};
+use amethyst::{
+    ecs::prelude::Entity,
+    input::{is_close_requested, is_key_down, is_mouse_button_down},
+    prelude::*,
+    ui::UiCreator,
+    winit::{MouseButton, VirtualKeyCode},
+};
 
 use crate::audio::initialise_audio;
 #[cfg(not(test))]
 use crate::audio::set_sink_volume;
 
-use crate::states::{util::delete_hierarchy,
-                    GameplayState};
+use crate::quit_during_tests;
+use crate::states::{util::delete_hierarchy, GameplayState};
 
 #[derive(Default, Debug)]
 pub struct WelcomeScreen {
@@ -46,75 +45,94 @@ impl SimpleState for WelcomeScreen {
                     log::info!("[Trans::Switch] Switching to MainMenu!");
                     Trans::Switch(Box::new(crate::states::MainMenu::default()))
                 } else {
-                    Trans::None
+                    quit_during_tests()
                 }
             }
-            _ => Trans::None,
+            _ => quit_during_tests(),
         }
     }
 
-    fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans { Trans::None }
+    fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
+        quit_during_tests()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::setup_loader_for_test;
+    use crate::tests::SendMockEvents;
 
-    use amethyst::{assets::AssetStorage,
-                   audio::Source,
-                   core::{ecs::{Read,
-                                Write},
-                          shrev::EventChannel,
-                          transform::TransformBundle,
-                          EventReader,
-                          SystemDesc},
-                   derive::SystemDesc,
-                   winit::*,
-                   StateEvent,
-                   StateEventReader};
+    use amethyst::{assets::AssetStorage, audio::Source, core::transform::TransformBundle, winit::*};
     use amethyst_test::AmethystApplication;
 
-    pub struct SendMockEvents<T, E> {
-        send_mock_events: Box<dyn Fn(&mut Write<EventChannel<Event>>) + Send>,
-        next_state:       Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
+    #[test]
+    fn welcome_screen_mouse_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |events| unsafe {
+                        events.single_write(Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::MouseInput {
+                                device_id: DeviceId::dummy(),
+                                state: ElementState::Pressed,
+                                button: MouseButton::Left,
+                                modifiers: Default::default(),
+                            },
+                        });
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
     }
 
-    impl<T, E: Send + Sync + 'static> SendMockEvents<T, E> {
-        pub fn new<Fsme, Fns>(next_state: Fns, send_mock_events: Fsme) -> Self
-            where Fsme: Fn(&mut Write<EventChannel<Event>>) + Send + 'static,
-                  Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static
-        {
-            Self { send_mock_events: Box::new(send_mock_events),
-                   next_state:       Box::new(next_state), }
-        }
-    }
-
-    impl<T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<T, E> {
-        fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
-            {
-                let mut events: Write<EventChannel<Event>>;
-                events = data.world.system_data();
-                (self.send_mock_events)(&mut events);
-            }
-
-            Trans::Switch((self.next_state)(data.world))
-        }
+    #[test]
+    fn welcome_screen_unhandeled_windows_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |events| unsafe {
+                        events.single_write(Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        });
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
     }
 
     #[test]
     fn test_welcome_screen() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank().with_bundle(TransformBundle::new())
-                                                      .with_setup(|world| {
-                                                          setup_loader_for_test(world);
-                                                          world.insert(AssetStorage::<Source>::default());
-                                                      })
-                                                      .with_state(|| {
-                                                          SendMockEvents::new(
-                                                                              |_world| Box::new(WelcomeScreen::default()),
-                                                                              |events| unsafe {
-                                                                                  events.single_write(Event::WindowEvent {
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |events| unsafe {
+                        events.single_write(Event::WindowEvent {
                             window_id: WindowId::dummy(),
                             event: WindowEvent::KeyboardInput {
                                 device_id: DeviceId::dummy(),
@@ -126,10 +144,10 @@ mod tests {
                                 },
                             },
                         });
-                                                                              },
-            )
-                                                      })
-                                                      .run();
+                    },
+                )
+            })
+            .run();
         assert!(test_result.is_ok());
     }
 }

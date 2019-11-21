@@ -95,28 +95,37 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
         return Err(Error::from_string("bad display_config_path"));
     }
 
-    GameDataBuilder::default()
-    // Add the transform bundle which handles tracking entity positions
-    .with_bundle(TransformBundle::new())?
-    .with_bundle(HotReloadBundle::default())?
-    .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-    .with_bundle(AudioBundle::default())?
-    .with_bundle(FpsCounterBundle::default())?
-    .with_system_desc(
-        DjSystemDesc::new(|music: &mut Music| music.music.next()),
-        "dj_system",
-        &[],
-    )
-    .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
-    .with_bundle(UiBundle::<StringBindings>::new())?
-    .with_bundle(
-        RenderingBundle::<DefaultBackend>::new()
+    let builder = match cfg!(test) {
+        true => GameDataBuilder::default(),
+        // Audio breaks windows test CI
+        false => GameDataBuilder::default()
+            .with_bundle(AudioBundle::default())?
+            .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[]),
+    };
+    builder
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(HotReloadBundle::default())?
+        .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
+        .with_bundle(AudioBundle::default())?
+        .with_bundle(FpsCounterBundle::default())?
+        .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[])
+        .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
+        .with_bundle(UiBundle::<StringBindings>::new())?
+        .with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
             // The RenderToWindow plugin provides all the scaffolding for opening a window and
             // drawing on it
             .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
-    )
+        )
+}
+
+fn quit_during_tests() -> Trans<GameData<'static, 'static>, StateEvent> {
+    match cfg!(test) {
+        true => Trans::Quit,
+        false => Trans::None,
+    }
 }
 
 #[cfg(test)]
@@ -169,7 +178,40 @@ impl ScoreBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use amethyst::core::ecs::Write;
+    use amethyst::core::shrev::EventChannel;
+    use amethyst::winit::*;
     use std::path::PathBuf;
+
+    pub struct SendMockEvents<T, E> {
+        send_mock_events: Box<dyn Fn(&mut Write<EventChannel<Event>>) + Send>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
+    }
+
+    impl<T, E: Send + Sync + 'static> SendMockEvents<T, E> {
+        pub fn new<Fsme, Fns>(next_state: Fns, send_mock_events: Fsme) -> Self
+        where
+            Fsme: Fn(&mut Write<EventChannel<Event>>) + Send + 'static,
+            Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static,
+        {
+            Self {
+                send_mock_events: Box::new(send_mock_events),
+                next_state: Box::new(next_state),
+            }
+        }
+    }
+
+    impl<T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<T, E> {
+        fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
+            {
+                let mut events: Write<EventChannel<Event>>;
+                events = data.world.system_data();
+                (self.send_mock_events)(&mut events);
+            }
+
+            Trans::Switch((self.next_state)(data.world))
+        }
+    }
 
     #[test]
     fn score_board_initialisation() {
