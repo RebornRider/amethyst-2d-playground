@@ -52,11 +52,7 @@ impl SimpleState for WelcomeScreen {
     }
 
     fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        if cfg!(test) {
-            Trans::Quit
-        } else {
-            Trans::None
-        }
+        Trans::None
     }
 }
 
@@ -65,8 +61,42 @@ mod tests {
     use super::*;
     use crate::setup_loader_for_test;
     use amethyst::audio::AudioBundle;
+    use amethyst::core::ecs::{Read, Write};
+    use amethyst::core::shrev::EventChannel;
     use amethyst::core::transform::TransformBundle;
+    use amethyst::core::EventReader;
+    use amethyst::core::SystemDesc;
+    use amethyst::derive::SystemDesc;
+    use amethyst::ecs::prelude::System;
+    use amethyst::winit::*;
+    use amethyst::StateEvent;
+    use amethyst::StateEventReader;
     use amethyst_test::AmethystApplication;
+
+    #[derive(Default, Debug)]
+    pub struct SendEscapeKey {}
+    impl SimpleState for SendEscapeKey {
+        fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
+            let mut events: Write<EventChannel<Event>>;
+            events = _data.world.system_data();
+            unsafe {
+                events.single_write(Event::WindowEvent {
+                    window_id: WindowId::dummy(),
+                    event: WindowEvent::KeyboardInput {
+                        device_id: DeviceId::dummy(),
+                        input: KeyboardInput {
+                            scancode: 0,
+                            state: ElementState::Pressed,
+                            virtual_keycode: Some(VirtualKeyCode::Escape),
+                            modifiers: Default::default(),
+                        },
+                    },
+                });
+            }
+
+            Trans::Switch(Box::new(WelcomeScreen::default()))
+        }
+    }
 
     #[test]
     fn test_welcome_screen() {
@@ -77,7 +107,7 @@ mod tests {
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })
-            .with_state(WelcomeScreen::default)
+            .with_state(SendEscapeKey::default)
             .run();
         assert!(test_result.is_ok());
     }

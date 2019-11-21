@@ -208,16 +208,14 @@ mod tests {
     }
 
     #[test]
-    fn validate_game_data_builder_garbage_key_bindings_path() -> amethyst::Result<()> {
-        let (_, key_bindings_path, _) = initialize_paths()?;
-        build_game_data(PathBuf::new(), key_bindings_path)?;
-        Ok(())
+    fn validate_game_data_builder_garbage_key_bindings_path() {
+        let (_, key_bindings_path, _) = initialize_paths().expect("valid paths required");
+        assert!(build_game_data(PathBuf::new(), key_bindings_path).is_err());
     }
 
     #[test]
-    fn validate_game_data_builder_garbage_display_config_path() -> amethyst::Result<()> {
-        let (display_config_path, _, _) = initialize_paths()?;
-        build_game_data(display_config_path, PathBuf::new())?;
-        Ok(())
+    fn validate_game_data_builder_garbage_display_config_path() {
+        let (display_config_path, _, _) = initialize_paths().expect("valid paths required");
+        assert!(build_game_data(display_config_path, PathBuf::new()).is_err());
     }
 }
