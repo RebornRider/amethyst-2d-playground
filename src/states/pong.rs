@@ -287,6 +287,7 @@ pub fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tests::SendMockEvents;
     use crate::{audio::initialise_audio, setup_loader_for_test};
     use amethyst::{
         assets::AssetStorage,
@@ -294,12 +295,14 @@ mod tests {
         core::{Parent, TransformBundle},
         input::StringBindings,
         renderer::{SpriteRender, SpriteSheet, Texture},
+        ui::{UiEvent, UiEventType},
         window::ScreenDimensions,
+        winit::*,
     };
     use amethyst_test::AmethystApplication;
 
     #[test]
-    fn test_pong_state() {
+    fn pong_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
@@ -321,6 +324,157 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(Pong::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(Pong::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(Pong::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: Default::default(),
+                                },
+                            },
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(Pong::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(Pong::default()),
+                    |world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()),
+                )
+            })
             .run();
         assert!(test_result.is_ok());
     }

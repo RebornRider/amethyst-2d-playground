@@ -179,16 +179,24 @@ mod tests {
     use amethyst::core::{ecs::Write, shrev::EventChannel};
     use std::path::PathBuf;
 
-    pub struct SendMockEvents<M, T, E> {
-        mock_events: Box<dyn Fn(&mut World) -> M + Send + 'static>,
-        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
+    pub struct SendMockEvents<MockEventT, GameDataT, StateEventT>
+    where
+        MockEventT: Send + Sync + 'static,
+        StateEventT: Send + Sync + 'static,
+    {
+        mock_events: Box<dyn Fn(&mut World) -> MockEventT>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<GameDataT, StateEventT>> + Send>,
     }
 
-    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
+    impl<MockEventT, GameDataT, E> SendMockEvents<MockEventT, GameDataT, E>
+    where
+        MockEventT: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+    {
         pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
         where
-            Fsme: Fn(&mut World) -> M + Send + 'static,
-            Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static,
+            Fsme: Fn(&mut World) -> MockEventT + Send + 'static,
+            Fns: Fn(&mut World) -> Box<dyn State<GameDataT, E>> + Send + 'static,
         {
             Self {
                 mock_events: Box::new(mock_events),
@@ -197,16 +205,22 @@ mod tests {
         }
     }
 
-    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
-        fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
+    impl<MockEventT, GameDataT, E> State<GameDataT, E> for SendMockEvents<MockEventT, GameDataT, E>
+    where
+        MockEventT: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+    {
+        fn update(&mut self, data: StateData<'_, GameDataT>) -> Trans<GameDataT, E> {
             {
                 let event = (self.mock_events)(data.world);
-                let mut events: (Write<EventChannel<M>>) = data.world.system_data();
+                let mut events: (Write<EventChannel<MockEventT>>) = data.world.system_data();
                 events.single_write(event);
             }
 
             Trans::Switch((self.next_state)(data.world))
         }
+
+        fn shadow_update(&mut self, data: StateData<'_, GameDataT>) {}
     }
 
     #[test]

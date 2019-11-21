@@ -52,14 +52,12 @@ impl SimpleState for WelcomeScreen {
             _ => quit_during_tests(),
         }
     }
-
-    fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        quit_during_tests()
-    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::{setup_loader_for_test, tests::SendMockEvents};
     use amethyst::{
         assets::AssetStorage,
         audio::Source,
@@ -69,10 +67,6 @@ mod tests {
         winit::*,
     };
     use amethyst_test::AmethystApplication;
-
-    use crate::{setup_loader_for_test, tests::SendMockEvents};
-
-    use super::*;
 
     #[test]
     fn left_mouse_button() {
@@ -104,7 +98,7 @@ mod tests {
     }
 
     #[test]
-    fn unhandeled_window_event() {
+    fn unhandled_window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())

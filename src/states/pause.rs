@@ -8,6 +8,7 @@ use amethyst::{
     TransEvent,
 };
 
+use crate::quit_during_tests;
 use crate::states::MainMenu;
 
 /// Adapted, originally from amethyst/evoli `src/states/pause_menu.rs`
@@ -106,11 +107,7 @@ impl<'a> SimpleState for PauseMenuState {
             });
         }
 
-        if cfg!(test) {
-            Trans::Quit
-        } else {
-            Trans::None
-        }
+        quit_during_tests()
     }
 }
 
