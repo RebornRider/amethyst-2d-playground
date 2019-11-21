@@ -176,35 +176,38 @@ impl ScoreBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use amethyst::core::ecs::Write;
-    use amethyst::core::shrev::EventChannel;
-    use amethyst::winit::*;
+    use amethyst::{
+        core::{ecs::Write, shrev::EventChannel},
+        shrev,
+        ui::UiEvent,
+        winit::*,
+    };
     use std::path::PathBuf;
 
-    pub struct SendMockEvents<T, E> {
-        send_mock_events: Box<dyn Fn(&mut Write<EventChannel<Event>>) + Send>,
+    pub struct SendMockEvents<M, T, E> {
+        mock_events: Box<dyn Fn(&mut World) -> M + Send>,
         next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
     }
 
-    impl<T, E: Send + Sync + 'static> SendMockEvents<T, E> {
-        pub fn new<Fsme, Fns>(next_state: Fns, send_mock_events: Fsme) -> Self
+    impl<M: shrev::Event, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
+        pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
         where
-            Fsme: Fn(&mut Write<EventChannel<Event>>) + Send + 'static,
+            Fsme: Fn(&mut World) -> M + Send + 'static,
             Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static,
         {
             Self {
-                send_mock_events: Box::new(send_mock_events),
+                mock_events: Box::new(mock_events),
                 next_state: Box::new(next_state),
             }
         }
     }
 
-    impl<T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<T, E> {
+    impl<M: shrev::Event, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
         fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
             {
-                let mut events: Write<EventChannel<Event>>;
-                events = data.world.system_data();
-                (self.send_mock_events)(&mut events);
+                let event = (self.mock_events)(data.world);
+                let mut events: (Write<EventChannel<M>>) = data.world.system_data();
+                events.single_write(event);
             }
 
             Trans::Switch((self.next_state)(data.world))
@@ -250,7 +253,7 @@ mod tests {
 
     #[test]
     fn validate_game_data_builder_garbage_display_config_path() {
-        let (display_config_path, _, _) = initialize_paths().expect("valid paths required");
+        let (display_config_path, ..) = initialize_paths().expect("valid paths required");
         assert!(build_game_data(display_config_path, PathBuf::new()).is_err());
     }
 }
