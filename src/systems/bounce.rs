@@ -85,7 +85,6 @@ mod tests {
     };
     use amethyst::{
         assets::AssetStorage,
-        audio::AudioBundle,
         core::{Parent, TransformBundle},
         ecs::prelude::WorldExt,
         prelude::Builder,
@@ -114,7 +113,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -153,7 +151,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -201,7 +198,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -238,6 +234,53 @@ mod tests {
 
                 for (ball, _transform) in (&balls, &transforms).join() {
                     assert_approx_eq!(ball.velocity[0], 1.0);
+                }
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn bottom_reflect() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                let tex_storage = AssetStorage::<Texture>::default();
+                let ss_storage = AssetStorage::<SpriteSheet>::default();
+                world.insert(tex_storage);
+                world.insert(ss_storage);
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+
+                // Initialize paddles and ball
+                let root_entity = Some(world.create_entity().with(Transform::default()).build());
+                let sprite_sheet_handle = Some(load_sprite_sheet(world));
+                if let Some(root_entity) = root_entity {
+                    if let Some(sprite_sheet) = sprite_sheet_handle.clone() {
+                        initialise_paddles(world, root_entity, sprite_sheet);
+                    }
+                    if let Some(sprite_sheet) = sprite_sheet_handle {
+                        use crate::{ARENA_WIDTH, BALL_RADIUS, BALL_VELOCITY_X};
+                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, -10.0], Some([ARENA_WIDTH / 2.0, 0.0]));
+                    }
+                }
+            })
+            .with_system_single(BounceSystem, "collision_system", &[])
+            .with_assertion(|world| {
+                let balls = world.read_storage::<Ball>();
+                let transforms = world.read_storage::<Transform>();
+                assert_eq!(1, balls.count());
+
+                for (ball, _transform) in (&balls, &transforms).join() {
+                    assert_approx_eq!(ball.velocity[1], 10.0);
                 }
             })
             .run();

@@ -7,7 +7,6 @@ clippy::bad_bit_mask
 clippy::blacklisted_name
 clippy::block_in_if_condition_expr
 clippy::block_in_if_condition_stmt
-clippy::bool_comparison
 clippy::borrow_interior_mutable_const
 clippy::borrowed_box
 clippy::box_vec

@@ -1,4 +1,3 @@
-//! Pong
 mod audio;
 mod states;
 mod systems;
@@ -43,8 +42,7 @@ const AUDIO_SCORE: &str = "audio/score.ogg";
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(amethyst::LoggerConfig::default());
-    let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
-    let mut game = build_game(display_config_path, key_bindings_path, assets_dir)?;
+    let mut game = build_game()?;
     game.run();
     Ok(())
 }
@@ -74,11 +72,8 @@ fn initialize_app_root() -> Result<path::PathBuf, Error> {
     Ok(app_root)
 }
 
-fn build_game(
-    display_config_path: path::PathBuf,
-    key_bindings_path: path::PathBuf,
-    assets_dir: path::PathBuf,
-) -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+    let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
     let game_data = build_game_data(display_config_path, key_bindings_path)?;
     let game = Application::build(assets_dir, states::WelcomeScreen::default())?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
@@ -100,37 +95,44 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
         return Err(Error::from_string("bad display_config_path"));
     }
 
-    GameDataBuilder::default()
-    // Add the transform bundle which handles tracking entity positions
-    .with_bundle(TransformBundle::new())?
-    .with_bundle(HotReloadBundle::default())?
-    .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-    .with_bundle(AudioBundle::default())?
-    .with_bundle(FpsCounterBundle::default())?
-    .with_system_desc(
-        DjSystemDesc::new(|music: &mut Music| music.music.next()),
-        "dj_system",
-        &[],
-    )
-    .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
-    .with_bundle(UiBundle::<StringBindings>::new())?
-    .with_bundle(
-        RenderingBundle::<DefaultBackend>::new()
+    let builder = match cfg!(test) {
+        true => GameDataBuilder::default(),
+        // Audio breaks windows test CI
+        false => GameDataBuilder::default()
+            .with_bundle(AudioBundle::default())?
+            .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[]),
+    };
+    builder
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(HotReloadBundle::default())?
+        .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
+        .with_bundle(FpsCounterBundle::default())?
+        .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
+        .with_bundle(UiBundle::<StringBindings>::new())?
+        .with_bundle(
+            RenderingBundle::<DefaultBackend>::new()
             // The RenderToWindow plugin provides all the scaffolding for opening a window and
             // drawing on it
             .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
-    )
+        )
+}
+
+fn quit_during_tests() -> Trans<GameData<'static, 'static>, StateEvent> {
+    match cfg!(test) {
+        true => Trans::Quit,
+        false => Trans::None,
+    }
 }
 
 #[cfg(test)]
 fn setup_loader_for_test(world: &mut World) {
     use amethyst::assets::{Directory, Loader};
-    let (_, _, assets_dir) = initialize_paths().unwrap();
+    let (_, _, assets_dir) = initialize_paths().expect("could not initialize paths");
     let _dir = assets_dir.clone().to_str().unwrap_or_default();
     let mut loader = world.write_resource::<Loader>();
-    loader.set_default_source(Directory::new(assets_dir.clone()));
+    loader.set_default_source(Directory::new(assets_dir));
 }
 
 pub struct Ball {
@@ -155,17 +157,6 @@ pub struct Paddle {
     pub height: f32,
 }
 
-impl Paddle {
-    pub const fn new(side: Side) -> Self {
-        Self {
-            velocity: 1.0,
-            side,
-            width: 1.0,
-            height: 1.0,
-        }
-    }
-}
-
 impl Component for Paddle {
     type Storage = DenseVecStorage<Self>;
 }
@@ -185,6 +176,38 @@ impl ScoreBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use amethyst::core::{ecs::Write, shrev::EventChannel};
+    use std::path::PathBuf;
+
+    pub struct SendMockEvents<M, T, E> {
+        mock_events: Box<dyn Fn(&mut World) -> M + Send + 'static>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
+    }
+
+    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
+        pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
+        where
+            Fsme: Fn(&mut World) -> M + Send + 'static,
+            Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static,
+        {
+            Self {
+                mock_events: Box::new(mock_events),
+                next_state: Box::new(next_state),
+            }
+        }
+    }
+
+    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
+        fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
+            {
+                let event = (self.mock_events)(data.world);
+                let mut events: (Write<EventChannel<M>>) = data.world.system_data();
+                events.single_write(event);
+            }
+
+            Trans::Switch((self.next_state)(data.world))
+        }
+    }
 
     #[test]
     fn score_board_initialisation() {
@@ -215,5 +238,17 @@ mod tests {
         let (display_config_path, key_bindings_path, _) = initialize_paths()?;
         build_game_data(display_config_path, key_bindings_path)?;
         Ok(())
+    }
+
+    #[test]
+    fn validate_game_data_builder_garbage_key_bindings_path() {
+        let (_, key_bindings_path, _) = initialize_paths().expect("valid paths required");
+        assert!(build_game_data(PathBuf::new(), key_bindings_path).is_err());
+    }
+
+    #[test]
+    fn validate_game_data_builder_garbage_display_config_path() {
+        let (display_config_path, ..) = initialize_paths().expect("valid paths required");
+        assert!(build_game_data(display_config_path, PathBuf::new()).is_err());
     }
 }

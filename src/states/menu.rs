@@ -90,12 +90,10 @@ impl SimpleState for MainMenu {
             });
         }
 
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                Trans::Quit
-            }  else {
-                Trans::None
-            }
+        if cfg!(test) {
+            Trans::Quit
+        } else {
+            Trans::None
         }
     }
 }
@@ -104,7 +102,6 @@ impl SimpleState for MainMenu {
 mod tests {
     use super::*;
     use crate::setup_loader_for_test;
-    use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
@@ -113,11 +110,10 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })
-            .with_state(|| MainMenu::default())
+            .with_state(MainMenu::default)
             .run();
         assert!(test_result.is_ok());
     }

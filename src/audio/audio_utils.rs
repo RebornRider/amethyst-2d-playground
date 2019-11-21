@@ -61,8 +61,9 @@ pub fn set_sink_volume(world: &mut World, volume: f32) {
 pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Option<&Output>) {
     if let Some(output) = output.as_ref() {
         if let Some(sound) = storage.get(&sounds.bounce_sfx) {
-            #[cfg(not(test))]
-            output.play_once(sound, 1.0);
+            if cfg!(not(test)) {
+                output.play_once(sound, 1.0);
+            }
         }
     }
 }
@@ -71,7 +72,6 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 mod tests {
     use super::*;
     use crate::setup_loader_for_test;
-    use amethyst::audio::AudioBundle;
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
@@ -80,7 +80,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());

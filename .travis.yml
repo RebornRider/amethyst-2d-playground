@@ -15,6 +15,11 @@ jobs:
     - rust: beta
     - rust: nightly
 
+env:
+  RUST_BACKTRACE=1
+
+cache: cargo
+
 addons:
   apt:
     packages:
@@ -39,4 +44,4 @@ addons:
 script:
   - cargo clean
   - cargo build --verbose --all --all-targets
-  - cargo test --verbose --all --no-run
+  - if [[$TRAVIS_OS_NAME == windows ]] && [[ $TRAVIS_RUST_VERSION != stable ]]; then cargo test --verbose --all --no-run; else cargo test --verbose --all; fi

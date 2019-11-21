@@ -6,15 +6,13 @@ use amethyst::{
     winit::{MouseButton, VirtualKeyCode},
 };
 
-cfg_if::cfg_if! {
-    if #[cfg(test)] {
-    use crate::audio::{initialise_audio};
-    }  else {
-    use crate::audio::{initialise_audio, set_sink_volume};
-    }
-}
-
-use crate::states::{util::delete_hierarchy, GameplayState};
+use crate::audio::initialise_audio;
+#[cfg(not(test))]
+use crate::audio::set_sink_volume;
+use crate::{
+    quit_during_tests,
+    states::{util::delete_hierarchy, GameplayState},
+};
 
 #[derive(Default, Debug)]
 pub struct WelcomeScreen {
@@ -48,42 +46,177 @@ impl SimpleState for WelcomeScreen {
                     log::info!("[Trans::Switch] Switching to MainMenu!");
                     Trans::Switch(Box::new(crate::states::MainMenu::default()))
                 } else {
-                    Trans::None
+                    quit_during_tests()
                 }
             }
-            _ => Trans::None,
+            _ => quit_during_tests(),
         }
     }
 
     fn update(&mut self, _data: &mut StateData<GameData>) -> SimpleTrans {
-        cfg_if::cfg_if! {
-            if #[cfg(test)] {
-                Trans::Quit
-            }  else {
-                Trans::None
-            }
-        }
+        quit_during_tests()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::setup_loader_for_test;
-    use amethyst::audio::AudioBundle;
-    use amethyst::core::transform::TransformBundle;
+    use amethyst::{
+        assets::AssetStorage,
+        audio::Source,
+        core::transform::TransformBundle,
+        input::{InputEvent, StringBindings},
+        ui::{UiEvent, UiEventType},
+        winit::*,
+    };
     use amethyst_test::AmethystApplication;
 
+    use crate::{setup_loader_for_test, tests::SendMockEvents};
+
+    use super::*;
+
     #[test]
-    fn test_welcome_screen() {
+    fn left_mouse_button() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
             })
-            .with_state(|| WelcomeScreen::default())
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::MouseInput {
+                                device_id: DeviceId::dummy(),
+                                state: ElementState::Pressed,
+                                button: MouseButton::Left,
+                                modifiers: Default::default(),
+                            },
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandeled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: Default::default(),
+                                },
+                            },
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn _event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |_world| unsafe {
+                        Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        }
+                    },
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()),
+                )
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_input_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = AmethystApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(AssetStorage::<Source>::default());
+            })
+            .with_state(|| {
+                SendMockEvents::new(
+                    |_world| Box::new(WelcomeScreen::default()),
+                    |_world| InputEvent::<StringBindings>::CursorMoved { delta_x: 0.0, delta_y: 0.0 },
+                )
+            })
             .run();
         assert!(test_result.is_ok());
     }
