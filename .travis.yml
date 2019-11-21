@@ -41,4 +41,4 @@ addons:
 script:
   - cargo clean
   - cargo build --verbose --all --all-targets
-  - if [ "$TRAVIS_OS_NAME" == "windows" ] && [ "$TRAVIS_RUST_VERSION" != "stable" ]]; then cargo test --verbose --all --no-run; else cargo test --verbose --all; fi
+  - if [ "$TRAVIS_OS_NAME" == "windows" ] && [ "$TRAVIS_RUST_VERSION" != "stable" ]; then cargo test --verbose --all --no-run; else cargo test --verbose --all; fi
