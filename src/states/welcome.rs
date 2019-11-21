@@ -184,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn unhandeled_ui_event() {
+    fn unhandled_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
@@ -203,7 +203,7 @@ mod tests {
     }
 
     #[test]
-    fn unhandeled_input_event() {
+    fn unhandled_input_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
