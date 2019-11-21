@@ -180,11 +180,6 @@ mod tests {
     }
 
     #[test]
-    fn build_game_no_run() {
-        build_game().expect("could not build game");
-    }
-
-    #[test]
     fn validate_paths_are_not_garbage() -> amethyst::Result<()> {
         let (mut display_config_path, mut key_bindings_path, mut assets_dir) = initialize_paths()?;
 
