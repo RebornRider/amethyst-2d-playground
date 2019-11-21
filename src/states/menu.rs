@@ -102,7 +102,7 @@ impl SimpleState for MainMenu {
 mod tests {
     use super::*;
     use crate::setup_loader_for_test;
-    use amethyst::{audio::AudioBundle, core::transform::TransformBundle};
+    use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
     #[test]
@@ -110,7 +110,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })

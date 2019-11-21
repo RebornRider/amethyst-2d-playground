@@ -95,7 +95,6 @@ mod tests {
     };
     use amethyst::{
         assets::AssetStorage,
-        audio::AudioBundle,
         core::{Parent, TransformBundle},
         ecs::prelude::WorldExt,
         input::StringBindings,
@@ -113,7 +112,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -167,7 +165,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))

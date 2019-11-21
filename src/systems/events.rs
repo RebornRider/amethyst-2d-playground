@@ -37,16 +37,13 @@ impl<'a> System<'a> for UiEventHandlerSystem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{audio::initialise_audio, setup_loader_for_test};
+    use crate::setup_loader_for_test;
     use amethyst::{
-        assets::AssetStorage,
-        audio::AudioBundle,
-        core::{Parent, TransformBundle},
+        core::TransformBundle,
         ecs::prelude::WorldExt,
         input::StringBindings,
         prelude::Builder,
-        renderer::{SpriteRender, SpriteSheet, Texture},
-        ui::{FontAsset, UiCreator, UiEvent, UiEventType, UiTransform},
+        ui::{UiEvent, UiEventType},
         utils::fps_counter::FpsCounterBundle,
         window::ScreenDimensions,
     };
@@ -57,7 +54,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))

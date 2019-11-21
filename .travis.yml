@@ -15,6 +15,8 @@ jobs:
     - rust: beta
     - rust: nightly
 
+cache: cargo
+
 addons:
   apt:
     packages:
@@ -39,4 +41,8 @@ addons:
 script:
   - cargo clean
   - cargo build --verbose --all --all-targets
-  - cargo test --verbose --all
+  - if [ "$TRAVIS_OS_NAME" == "windows" ] && [ "$TRAVIS_RUST_VERSION" != "beta" ]]; then
+      cargo test --verbose --all --no-run;
+    else
+      cargo test --verbose --all;
+    fi

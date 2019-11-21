@@ -67,7 +67,6 @@ mod tests {
     use amethyst::core::EventReader;
     use amethyst::core::SystemDesc;
     use amethyst::derive::SystemDesc;
-    use amethyst::ecs::prelude::System;
     use amethyst::winit::*;
     use amethyst::StateEvent;
     use amethyst::StateEventReader;

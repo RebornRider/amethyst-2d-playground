@@ -85,7 +85,6 @@ mod tests {
     };
     use amethyst::{
         assets::AssetStorage,
-        audio::AudioBundle,
         core::{Parent, TransformBundle},
         ecs::prelude::WorldExt,
         prelude::Builder,
@@ -114,7 +113,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -153,7 +151,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -201,7 +198,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
@@ -249,7 +245,6 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = AmethystApplication::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(AudioBundle::default())
             .with_setup(|world| {
                 setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
