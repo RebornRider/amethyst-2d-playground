@@ -176,20 +176,15 @@ impl ScoreBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use amethyst::{
-        core::{ecs::Write, shrev::EventChannel},
-        shrev,
-        ui::UiEvent,
-        winit::*,
-    };
+    use amethyst::core::{ecs::Write, shrev::EventChannel};
     use std::path::PathBuf;
 
     pub struct SendMockEvents<M, T, E> {
-        mock_events: Box<dyn Fn(&mut World) -> M + Send>,
+        mock_events: Box<dyn Fn(&mut World) -> M + Send + 'static>,
         next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
     }
 
-    impl<M: shrev::Event, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
+    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
         pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
         where
             Fsme: Fn(&mut World) -> M + Send + 'static,
@@ -202,7 +197,7 @@ mod tests {
         }
     }
 
-    impl<M: shrev::Event, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
+    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
         fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
             {
                 let event = (self.mock_events)(data.world);
