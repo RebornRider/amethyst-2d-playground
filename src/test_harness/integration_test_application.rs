@@ -4,7 +4,7 @@ use crate::game_data::{CustomGameData, CustomGameDataBuilder};
 use crate::{GameStateEvent, GameStateEventReader};
 use amethyst::{
     self,
-    core::{transform::TransformBundle, EventReader, RunNowDesc, SystemBundle, SystemDesc},
+    core::{transform::TransformBundle, RunNowDesc, SystemBundle, SystemDesc},
     ecs::prelude::*,
     error::Error,
     input::{BindingTypes, InputBundle},
@@ -14,7 +14,7 @@ use amethyst::{
     utils::application_root_dir,
     window::ScreenDimensions,
 };
-use amethyst_test::{CustomDispatcherStateBuilder, FunctionState, GameUpdate, SequencerState};
+use amethyst_test::{CustomDispatcherStateBuilder, FunctionState, SequencerState};
 use derivative::Derivative;
 use derive_new::new;
 use lazy_static::lazy_static;
@@ -130,15 +130,7 @@ type BundleAddFn = Box<dyn FnOnce(CustomGameDataBuilder<'static, 'static>) -> Cu
 //   ergonomics of this test harness.
 type FnResourceAdd = Box<dyn FnMut(&mut World) + Send>;
 type FnSetup = Box<dyn FnOnce(&mut World) + Send>;
-type FnState<T, E> = Box<dyn FnOnce() -> Box<dyn State<T, E>>>;
-
-/// Screen width used in predefined display configuration.
-pub const SCREEN_WIDTH: u32 = 800;
-/// Screen height used in predefined display configuration.
-pub const SCREEN_HEIGHT: u32 = 600;
-/// The ratio between the backing framebuffer resolution and the window size in screen pixels.
-/// This is typically one for a normal display and two for a retina display.
-pub const HIDPI: f64 = 1.;
+type FnState = Box<dyn FnOnce() -> Box<dyn State<CustomGameData<'static, 'static>, GameStateEvent>>>;
 
 // Use a mutex to prevent multiple tests that use Rendy from running simultaneously:
 //
@@ -157,10 +149,7 @@ lazy_static! {
 /// * `E`: Custom event type shared between states.
 #[derive(Derivative, Default)]
 #[derivative(Debug)]
-pub struct IntegrationTestApplication<T, E, R>
-where
-    E: Send + Sync + 'static,
-{
+pub struct IntegrationTestApplication {
     /// Functions to add bundles to the game data.
     ///
     /// This is necessary because `System`s are not `Send`, and so we cannot send `CustomGameDataBuilder`
@@ -180,16 +169,15 @@ where
     setup_fns: Vec<FnSetup>,
     /// States to run, in user specified order.
     #[derivative(Debug = "ignore")]
-    state_fns: Vec<FnState<T, E>>,
+    state_fns: Vec<FnState>,
     /// Game data and event type.
-    state_data: PhantomData<(T, E, R)>,
+    state_data: PhantomData<(CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader)>,
 }
 
-impl IntegrationTestApplication<CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader> {
+impl IntegrationTestApplication {
     /// Returns an Amethyst application without any bundles.
-    pub fn blank() -> IntegrationTestApplication<CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>
-    {
-        IntegrationTestApplication {
+    pub fn blank() -> Self {
+        Self {
             bundle_add_fns: Vec::new(),
             resource_add_fns: Vec::new(),
             setup_fns: Vec::new(),
@@ -202,32 +190,25 @@ impl IntegrationTestApplication<CustomGameData<'static, 'static>, GameStateEvent
     ///
     /// This also adds a `ScreenDimensions` resource to the `World` so that UI calculations can be
     /// done.
-    pub fn ui_base<B: BindingTypes>(
-    ) -> IntegrationTestApplication<CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader> {
+    pub fn ui_base<B: BindingTypes>() -> IntegrationTestApplication {
         IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<B>()
-            .with_resource(ScreenDimensions::new(SCREEN_WIDTH, SCREEN_HEIGHT, HIDPI))
+            .with_resource(ScreenDimensions::new(1920, 1280, 1.0))
     }
 
     /// Returns a `PathBuf` to `<crate_dir>/assets`.
     pub fn assets_dir() -> Result<PathBuf, Error> {
         Ok(application_root_dir()?.join("assets"))
     }
-}
 
-impl<E, R> IntegrationTestApplication<CustomGameData<'static, 'static>, E, R>
-where
-    E: Clone + Send + Sync + 'static,
-    R: Default,
-{
     /// Returns the built Application.
     ///
     /// If you are intending to run the `Application`, you can use the `run()` or `run_isolated()`
     /// methods instead.
-    pub fn build(self) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, E, R>, Error>
-    where
-        for<'b> R: EventReader<'b, Event = E>,
+    pub fn build(
+        self,
+    ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error>
     {
         let params = (
             self.bundle_add_fns,
@@ -251,18 +232,16 @@ where
             Vec<BundleAddFn>,
             Vec<FnResourceAdd>,
             Vec<FnSetup>,
-            Vec<FnState<CustomGameData<'static, 'static>, E>>,
+            Vec<FnState>,
         ),
-    ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, E, R>, Error>
-    where
-        for<'b> R: EventReader<'b, Event = E>,
+    ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error>
     {
         let game_data = bundle_add_fns.into_iter().fold(
             CustomGameDataBuilder::default(),
             |game_data: CustomGameDataBuilder<'_, '_>, function: BundleAddFn| function(game_data),
         );
 
-        let mut states = Vec::<Box<dyn State<CustomGameData<'static, 'static>, E>>>::new();
+        let mut states = Vec::<Box<dyn State<CustomGameData<'static, 'static>, GameStateEvent>>>::new();
         state_fns.into_iter().rev().for_each(|state_fn| states.push(state_fn()));
         Self::build_application(SequencerState::new(states), game_data, resource_add_fns, setup_fns)
     }
@@ -272,10 +251,9 @@ where
         game_data: CustomGameDataBuilder<'static, 'static>,
         resource_add_fns: Vec<FnResourceAdd>,
         setup_fns: Vec<FnSetup>,
-    ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, E, R>, Error>
+    ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error>
     where
-        S: State<CustomGameData<'static, 'static>, E> + 'static,
-        for<'b> R: EventReader<'b, Event = E>,
+        S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
         let assets_dir = IntegrationTestApplication::assets_dir().expect("Failed to get default assets dir.");
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
@@ -292,10 +270,7 @@ where
     }
 
     /// Runs the application and returns `Ok(())` if nothing went wrong.
-    pub fn run(self) -> Result<(), Error>
-    where
-        for<'b> R: EventReader<'b, Event = E>,
-    {
+    pub fn run(self) -> Result<(), Error> {
         let params = (
             self.bundle_add_fns,
             self.resource_add_fns,
@@ -323,10 +298,7 @@ where
     /// [mesa]: <https://github.com/rust-windowing/glutin/issues/1038>
     /// [vulkan]: <https://github.com/amethyst/rendy/issues/151>
     /// [audio]: <https://github.com/amethyst/amethyst/issues/1595>
-    pub fn run_isolated(self) -> Result<(), Error>
-    where
-        for<'b> R: EventReader<'b, Event = E>,
-    {
+    pub fn run_isolated(self) -> Result<(), Error> {
         // Acquire a lock due to memory access issues when using Rendy:
         //
         // See: <https://github.com/amethyst/rendy/issues/151>
@@ -348,43 +320,6 @@ where
             )
         }
     }
-}
-
-impl<T, E, R> IntegrationTestApplication<T, E, R>
-where
-    T: GameUpdate + 'static,
-    E: Send + Sync + 'static,
-    R: 'static,
-{
-    /// Use the specified custom event type instead of `()`.
-    ///
-    /// This **must** be invoked before any of the `.with_*()` function calls as the custom event
-    /// type parameter is changed, so we are unable to bring any of the existing parameters across.
-    ///
-    /// # Type Parameters
-    ///
-    /// * `Evt`: Type used for state events.
-    /// * `Rdr`: Event reader of the state events.
-    pub fn with_custom_event_type<Evt, Rdr>(self) -> IntegrationTestApplication<T, Evt, Rdr>
-    where
-        Evt: Send + Sync + 'static,
-        for<'b> Rdr: EventReader<'b, Event = Evt>,
-    {
-        if !self.state_fns.is_empty() {
-            panic!(
-                "`{}` must be invoked **before** any other `.with_*()` \
-                 functions calls.",
-                stringify!(with_custom_event_type::<E>())
-            );
-        }
-        IntegrationTestApplication {
-            bundle_add_fns: self.bundle_add_fns,
-            resource_add_fns: self.resource_add_fns,
-            setup_fns: self.setup_fns,
-            state_fns: Vec::new(),
-            state_data: PhantomData,
-        }
-    }
 
     /// Adds a bundle to the list of bundles.
     ///
@@ -393,7 +328,7 @@ where
     /// * `bundle`: Bundle to add.
     pub fn with_bundle<B>(mut self, bundle: B) -> Self
     where
-        B: SystemBundle<'static, 'static> + Send + 'static,
+        B: SystemBundle<'static, 'static> + 'static,
     {
         // We need to use `SendBoxFnOnce` because:
         //
@@ -478,11 +413,12 @@ where
     /// * `state_fn`: `State` to use.
     pub fn with_state<S, FnStateLocal>(mut self, state_fn: FnStateLocal) -> Self
     where
-        S: State<T, E> + 'static,
+        S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
         FnStateLocal: FnOnce() -> S + Send + Sync + 'static,
     {
         // Box up the state
-        let closure = move || Box::new((state_fn)()) as Box<dyn State<T, E>>;
+        let closure =
+            move || Box::new((state_fn)()) as Box<dyn State<CustomGameData<'static, 'static>, GameStateEvent>>;
         self.state_fns.push(Box::new(closure));
         self
     }
@@ -564,7 +500,7 @@ where
             .map(Clone::clone)
             .map(Into::<String>::into)
             .collect::<Vec<String>>();
-        self.with_state(move || {
+        self.with_state(|| {
             CustomDispatcherStateBuilder::new()
                 .with_system(system, name, deps)
                 .build()
@@ -1112,18 +1048,17 @@ mod test {
         }
     }
 
-    struct SwitchState<S, T, E>
+    struct SwitchState<S>
     where
-        S: State<T, E>,
-        E: Send + Sync + 'static,
+        S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
         next_state: Option<S>,
-        state_data: PhantomData<(T, E)>,
+        state_data: PhantomData<(CustomGameData<'static, 'static>, GameStateEvent)>,
     }
-    impl<S, T, E> SwitchState<S, T, E>
+
+    impl<S> SwitchState<S>
     where
-        S: State<T, E>,
-        E: Send + Sync + 'static,
+        S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
         fn new(next_state: S) -> Self {
             Self {
@@ -1132,12 +1067,14 @@ mod test {
             }
         }
     }
-    impl<S, T, E> State<T, E> for SwitchState<S, T, E>
+    impl<'a, 'b, S> State<CustomGameData<'static, 'static>, GameStateEvent> for SwitchState<S>
     where
-        S: State<T, E> + 'static,
-        E: Send + Sync + 'static,
+        S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        fn update(&mut self, _data: StateData<'_, T>) -> Trans<T, E> {
+        fn update(
+            &mut self,
+            _data: StateData<'_, CustomGameData<'_, '_>>,
+        ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
             Trans::Switch(Box::new(self.next_state.take().unwrap()))
         }
     }

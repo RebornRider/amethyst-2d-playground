@@ -98,6 +98,7 @@ impl<'a, 'b> CustomGameDataBuilder<'a, 'b> {
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_running<SD, S>(
         mut self,
         system_desc: SD,
@@ -115,6 +116,15 @@ impl<'a, 'b> CustomGameDataBuilder<'a, 'b> {
             marker: PhantomData::<S>,
         }) as Box<dyn DispatcherOperation<'a, 'b> + 'static>;
         self.running_dispatcher_operations.push(dispatcher_operation);
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn with_running_bundle<B>(mut self, bundle: B) -> Self
+    where
+        B: SystemBundle<'a, 'b> + 'static,
+    {
+        self.running_dispatcher_operations.push(Box::new(AddBundle { bundle }));
         self
     }
 }
