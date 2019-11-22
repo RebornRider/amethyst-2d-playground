@@ -1,3 +1,7 @@
+use crate::game_data::CustomGameData;
+use crate::states::{util::delete_hierarchy, MainMenu};
+use crate::test_harness::IntegrationTestApplication;
+use crate::{quit_during_tests, GameStateEvent};
 use amethyst::{
     ecs::prelude::Entity,
     input::{is_close_requested, is_key_down, is_mouse_button_down},
@@ -5,10 +9,6 @@ use amethyst::{
     ui::UiCreator,
     winit::{MouseButton, VirtualKeyCode},
 };
-
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
-use crate::states::{util::delete_hierarchy, MainMenu};
-use crate::{quit_during_tests, GameStateEvent};
 
 // A simple 'Screen' State, only capable of loading/showing the prefab ui and registering simple
 // UI interactions (pressing escape or clicking anywhere).
@@ -66,24 +66,19 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{setup_loader_for_test, GameStateEvent, GameStateEventReader};
+    use crate::setup_loader_for_test;
     use amethyst::core::transform::TransformBundle;
-    use amethyst_test::AmethystApplication;
 
-    //    #[test]
-    //    fn test_credits_state() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //                AmethystApplication::blank(),
-    //            ),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //        })
-    //        .with_state(CreditsScreen::default)
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
+    #[test]
+    fn test_credits_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(CreditsScreen::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
 }

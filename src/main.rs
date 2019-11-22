@@ -2,6 +2,7 @@ mod audio;
 mod game_data;
 mod states;
 mod systems;
+mod test_harness;
 
 use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 use amethyst::{
@@ -231,25 +232,27 @@ where
 mod tests {
     use super::*;
     use amethyst::core::{ecs::Write, shrev::EventChannel};
+    use amethyst_test::AmethystApplication;
+    use std::panic;
     use std::path::PathBuf;
 
-    pub struct SendMockEvents<MockEventT, GameDataT, StateEventT>
+    pub struct SendMockEvents<MockEventT, CustomGameDataT, StateEventT>
     where
         MockEventT: Send + Sync + 'static,
         StateEventT: Send + Sync + 'static,
     {
         mock_events: Vec<Box<dyn Fn(&mut World) -> MockEventT>>,
-        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<GameDataT, StateEventT>>>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<CustomGameDataT, StateEventT>>>,
     }
 
-    impl<MockEventT, GameDataT, E> SendMockEvents<MockEventT, GameDataT, E>
+    impl<MockEventT, CustomGameDataT, E> SendMockEvents<MockEventT, CustomGameDataT, E>
     where
         MockEventT: Send + Sync + 'static,
         E: Send + Sync + 'static,
     {
         pub fn to_state<FnT>(next_state: FnT) -> Self
         where
-            FnT: Fn(&mut World) -> Box<dyn State<GameDataT, E>> + Send + Sync + 'static,
+            FnT: Fn(&mut World) -> Box<dyn State<CustomGameDataT, E>> + Send + Sync + 'static,
         {
             Self {
                 mock_events: vec![],
@@ -266,16 +269,16 @@ mod tests {
         }
     }
 
-    impl<MockEventT, GameDataT, E> State<GameDataT, E> for SendMockEvents<MockEventT, GameDataT, E>
+    impl<MockEventT, CustomGameDataT, E> State<CustomGameDataT, E> for SendMockEvents<MockEventT, CustomGameDataT, E>
     where
         MockEventT: Send + Sync + 'static,
         E: Send + Sync + 'static,
     {
-        fn update(&mut self, data: StateData<'_, GameDataT>) -> Trans<GameDataT, E> {
+        fn update(&mut self, data: StateData<'_, CustomGameDataT>) -> Trans<CustomGameDataT, E> {
             Trans::Switch((self.next_state)(data.world))
         }
 
-        fn shadow_update(&mut self, data: StateData<'_, GameDataT>) {
+        fn shadow_update(&mut self, data: StateData<'_, CustomGameDataT>) {
             {
                 if let Some(mock_event) = self.mock_events.pop() {
                     let event = (mock_event)(data.world);

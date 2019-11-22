@@ -6,11 +6,10 @@ use amethyst::{
     winit::VirtualKeyCode,
 };
 
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
-
+use crate::game_data::CustomGameData;
 use crate::states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen};
+use crate::test_harness::IntegrationTestApplication;
 use crate::GameStateEvent;
-use crate::GameStateEventReader;
 
 const BUTTON_START: &str = "start";
 const BUTTON_LOAD: &str = "load";
@@ -121,18 +120,16 @@ mod tests {
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
-    //    #[test]
-    //    fn test_main_menu_state() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //        })
-    //        .with_state(MainMenu::default)
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
+    #[test]
+    fn test_main_menu_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(MainMenu::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
 }

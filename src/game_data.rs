@@ -6,7 +6,9 @@ use amethyst::{
     error::Error,
     DataDispose, DataInit,
 };
+use amethyst_test::GameUpdate;
 
+#[derive(Default)]
 pub struct CustomGameData<'a, 'b> {
     pub base: Option<Dispatcher<'a, 'b>>,
     pub running: Option<Dispatcher<'a, 'b>>,
@@ -33,6 +35,13 @@ impl<'a, 'b> CustomGameData<'a, 'b> {
         if let Some(running) = self.running.take() {
             running.dispose(world);
         }
+    }
+}
+
+// Implement for built-in Amethyst `GameData`
+impl<'a, 'b> GameUpdate for CustomGameData<'a, 'b> {
+    fn update(&mut self, world: &World) {
+        CustomGameData::update(self, world, true);
     }
 }
 
@@ -85,8 +94,7 @@ impl<'a, 'b> CustomGameDataBuilder<'a, 'b> {
     where
         B: SystemBundle<'a, 'b> + 'static,
     {
-        self.base_dispatcher_operations
-            .push(Box::new(AddBundle { bundle }));
+        self.base_dispatcher_operations.push(Box::new(AddBundle { bundle }));
         self
     }
 
@@ -106,8 +114,7 @@ impl<'a, 'b> CustomGameDataBuilder<'a, 'b> {
             dependencies,
             marker: PhantomData::<S>,
         }) as Box<dyn DispatcherOperation<'a, 'b> + 'static>;
-        self.running_dispatcher_operations
-            .push(dispatcher_operation);
+        self.running_dispatcher_operations.push(dispatcher_operation);
         self
     }
 }
@@ -138,9 +145,7 @@ fn build_dispatcher<'a, 'b>(
 
     dispatcher_operations
         .into_iter()
-        .try_for_each(|dispatcher_operation| {
-            dispatcher_operation.exec(world, &mut dispatcher_builder)
-        })
+        .try_for_each(|dispatcher_operation| dispatcher_operation.exec(world, &mut dispatcher_builder))
         .unwrap_or_else(|e| panic!("Failed to set up dispatcher: {}", e));
 
     let mut dispatcher = dispatcher_builder.build();

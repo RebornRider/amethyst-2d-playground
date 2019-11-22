@@ -20,6 +20,9 @@ test-case = { version = "0" }
 cfg-if = { version = "0" }
 assert_approx_eq = { version = "1" }
 derivative = { version = "1" }
+derive-new = { version = "0" }
+derive_deref = { version = "1" }
+lazy_static = { version = "1" }
 
 [features]
 default = ["vulkan"]

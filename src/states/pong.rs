@@ -1,8 +1,9 @@
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
+use crate::game_data::CustomGameData;
+use crate::test_harness::IntegrationTestApplication;
 use crate::{
     states::{delete_hierarchy, GameplayState, PauseMenuState},
     systems::ScoreText,
-    Ball, GameStateEvent, GameStateEventReader, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
+    Ball, GameStateEvent, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
 };
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
@@ -365,182 +366,171 @@ mod tests {
         window::ScreenDimensions,
         winit::*,
     };
-    use amethyst_test::AmethystApplication;
 
-    //    #[test]
-    //    fn pong_state() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_ui_bundles::<StringBindings>()
-    //        .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //            world.insert(GameplayState::Paused);
-    //            world.insert(AssetStorage::<Source>::default());
-    //            initialise_audio(world);
-    //
-    //            world.insert(AssetStorage::<Texture>::default());
-    //            world.insert(AssetStorage::<SpriteSheet>::default());
-    //            world.register::<Transform>();
-    //            world.register::<Parent>();
-    //            world.register::<SpriteRender>();
-    //            world.register::<Paddle>();
-    //            world.register::<Ball>();
-    //            world.register::<Camera>();
-    //        })
-    //        .with_state(Pong::default)
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
-    //
-    //    #[test]
-    //    fn is_close_requested() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_ui_bundles::<StringBindings>()
-    //        .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //            world.insert(GameplayState::Paused);
-    //            world.insert(AssetStorage::<Source>::default());
-    //            initialise_audio(world);
-    //
-    //            world.insert(AssetStorage::<Texture>::default());
-    //            world.insert(AssetStorage::<SpriteSheet>::default());
-    //            world.register::<Transform>();
-    //            world.register::<Parent>();
-    //            world.register::<SpriteRender>();
-    //            world.register::<Paddle>();
-    //            world.register::<Ball>();
-    //            world.register::<Camera>();
-    //        })
-    //        .with_state(|| {
-    //            SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-    //                Event::WindowEvent {
-    //                    window_id: WindowId::dummy(),
-    //                    event: WindowEvent::CloseRequested,
-    //                }
-    //            })
-    //        })
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
-    //
-    //    #[test]
-    //    fn escape_key() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_ui_bundles::<StringBindings>()
-    //        .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //            world.insert(GameplayState::Paused);
-    //            world.insert(AssetStorage::<Source>::default());
-    //            initialise_audio(world);
-    //
-    //            world.insert(AssetStorage::<Texture>::default());
-    //            world.insert(AssetStorage::<SpriteSheet>::default());
-    //            world.register::<Transform>();
-    //            world.register::<Parent>();
-    //            world.register::<SpriteRender>();
-    //            world.register::<Paddle>();
-    //            world.register::<Ball>();
-    //            world.register::<Camera>();
-    //        })
-    //        .with_state(|| {
-    //            SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-    //                Event::WindowEvent {
-    //                    window_id: WindowId::dummy(),
-    //                    event: WindowEvent::KeyboardInput {
-    //                        device_id: DeviceId::dummy(),
-    //                        input: KeyboardInput {
-    //                            scancode: 0,
-    //                            state: ElementState::Pressed,
-    //                            virtual_keycode: Some(VirtualKeyCode::Escape),
-    //                            modifiers: Default::default(),
-    //                        },
-    //                    },
-    //                }
-    //            })
-    //        })
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
-    //
-    //    #[test]
-    //    fn unhandled_window_event() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_ui_bundles::<StringBindings>()
-    //        .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //            world.insert(GameplayState::Paused);
-    //            world.insert(AssetStorage::<Source>::default());
-    //            initialise_audio(world);
-    //
-    //            world.insert(AssetStorage::<Texture>::default());
-    //            world.insert(AssetStorage::<SpriteSheet>::default());
-    //            world.register::<Transform>();
-    //            world.register::<Parent>();
-    //            world.register::<SpriteRender>();
-    //            world.register::<Paddle>();
-    //            world.register::<Ball>();
-    //            world.register::<Camera>();
-    //        })
-    //        .with_state(|| {
-    //            SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-    //                Event::WindowEvent {
-    //                    window_id: WindowId::dummy(),
-    //                    event: WindowEvent::HoveredFileCancelled,
-    //                }
-    //            })
-    //        })
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
-    //
-    //    #[test]
-    //    fn unhandled_ui_event() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-    //            AmethystApplication::blank(),
-    //        )
-    //        .with_bundle(TransformBundle::new())
-    //        .with_ui_bundles::<StringBindings>()
-    //        .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //            world.insert(GameplayState::Paused);
-    //            world.insert(AssetStorage::<Source>::default());
-    //            initialise_audio(world);
-    //
-    //            world.insert(AssetStorage::<Texture>::default());
-    //            world.insert(AssetStorage::<SpriteSheet>::default());
-    //            world.register::<Transform>();
-    //            world.register::<Parent>();
-    //            world.register::<SpriteRender>();
-    //            world.register::<Paddle>();
-    //            world.register::<Ball>();
-    //            world.register::<Camera>();
-    //        })
-    //        .with_state(|| {
-    //            SendMockEvents::to_state(|_world| Box::new(Pong::default()))
-    //                .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
-    //        })
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
+    #[test]
+    fn pong_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(Pong::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::CloseRequested,
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::KeyboardInput {
+                            device_id: DeviceId::dummy(),
+                            input: KeyboardInput {
+                                scancode: 0,
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                modifiers: Default::default(),
+                            },
+                        },
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::HoveredFileCancelled,
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::to_state(|_world| Box::new(Pong::default()))
+                    .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
 }

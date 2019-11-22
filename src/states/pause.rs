@@ -1,3 +1,7 @@
+use crate::game_data::{CustomGameData, CustomGameDataBuilder};
+use crate::states::MainMenu;
+use crate::test_harness::IntegrationTestApplication;
+use crate::{quit_during_tests, GameStateEvent};
 use amethyst::{
     ecs::Entity,
     input::{is_close_requested, is_key_down},
@@ -7,10 +11,6 @@ use amethyst::{
     winit::VirtualKeyCode,
     TransEvent,
 };
-
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
-use crate::states::MainMenu;
-use crate::{quit_during_tests, GameStateEvent, GameStateEventReader};
 
 /// Adapted, originally from amethyst/evoli `src/states/pause_menu.rs`
 
@@ -127,21 +127,16 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
 mod tests {
     use super::*;
     use crate::setup_loader_for_test;
-    use amethyst::Error;
-    use amethyst_test::AmethystApplication;
 
-    //    #[test]
-    //    fn test_pause_menu_state() {
-    //        amethyst::start_logger(amethyst::LoggerConfig::default());
-    //        let test_result: Result<(), Error> = AmethystApplication::with_custom_event_type::<
-    //            GameStateEvent,
-    //            GameStateEventReader,
-    //        >(AmethystApplication::blank())
-    //        .with_setup(|world| {
-    //            setup_loader_for_test(world);
-    //        })
-    //        .with_state(PauseMenuState::default)
-    //        .run();
-    //        assert!(test_result.is_ok());
-    //    }
+    #[test]
+    fn test_pause_menu_state() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = IntegrationTestApplication::blank()
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+            })
+            .with_state(PauseMenuState::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
 }
