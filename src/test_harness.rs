@@ -21,7 +21,7 @@ use lazy_static::lazy_static;
 
 /// Adds a specified `System` to the dispatcher.
 #[derive(Debug, new)]
-pub(crate) struct SystemDescInjectionBundle<'a, 'b, SD, S>
+pub struct SystemDescInjectionBundle<'a, 'b, SD, S>
 where
     SD: SystemDesc<'a, 'b, S>,
     S: for<'s> System<'s> + Send,
@@ -54,7 +54,7 @@ where
 
 /// Adds a specified `System` to the dispatcher.
 #[derive(Debug, new)]
-pub(crate) struct SystemInjectionBundle<S>
+pub struct SystemInjectionBundle<S>
 where
     S: for<'s> System<'s> + Send,
 {
@@ -702,7 +702,6 @@ mod test {
     }
 
     #[test]
-    #[should_panic] // This cannot be expect explicit because of nightly feature.
     fn assertion_when_resource_is_not_added_should_panic() {
         let assertion_fn = |world: &mut World| {
             // Panics if `ApplicationResource` was not added.
@@ -713,7 +712,7 @@ mod test {
             // without BundleOne
             .with_assertion(assertion_fn)
             .run()
-            .unwrap();
+            .expect_err("read_resource did not panic");
     }
 
     #[test]
@@ -747,7 +746,6 @@ mod test {
     }
 
     #[test]
-    #[should_panic] // This cannot be expect explicit because of nightly feature.
     fn assertion_switch_with_loading_state_without_add_resource_should_panic() {
         let state_fns = || {
             let assertion_fn = |world: &mut World| {
@@ -757,11 +755,13 @@ mod test {
             SwitchState::new(FunctionState::new(assertion_fn))
         };
 
-        IntegrationTestApplication::blank().with_state(state_fns).run().unwrap();
+        IntegrationTestApplication::blank()
+            .with_state(state_fns)
+            .run()
+            .expect_err("read_resource did not panic");
     }
 
     #[test]
-    #[should_panic] // This cannot be expect explicit because of nightly feature.
     fn assertion_push_with_loading_state_without_add_resource_should_panic() {
         // Alternative to embedding the `FunctionState` is to switch to a `PopState` but still
         // provide the assertion function
@@ -774,15 +774,15 @@ mod test {
             .with_state(state_fns)
             .with_assertion(assertion_fn)
             .run()
-            .unwrap();
+            .expect_err("read_resource did not panic");
     }
 
     #[test]
     fn game_data_must_update_before_assertion() -> Result<(), Error> {
         let effect_fn = |world: &mut World| {
             let handles = vec![
-                AssetZeroLoader::load(world, AssetZero(10)).unwrap(),
-                AssetZeroLoader::load(world, AssetZero(20)).unwrap(),
+                AssetZeroLoader::load(world, AssetZero(10)).expect("could not load asset zero"),
+                AssetZeroLoader::load(world, AssetZero(20)).expect("could not load asset zero"),
             ];
 
             world.insert::<Vec<AssetZeroHandle>>(handles);
@@ -791,8 +791,12 @@ mod test {
             let asset_translation_zero_handles = world.read_resource::<Vec<AssetZeroHandle>>();
 
             let store = world.read_resource::<AssetStorage<AssetZero>>();
-            assert_eq!(Some(&AssetZero(10)), store.get(&asset_translation_zero_handles[0]));
-            assert_eq!(Some(&AssetZero(20)), store.get(&asset_translation_zero_handles[1]));
+
+            let first_handle = &asset_translation_zero_handles.get(0).expect("can't get first handle");
+            assert_eq!(Some(&AssetZero(10)), store.get(first_handle));
+
+            let second_handle = &asset_translation_zero_handles.get(1).expect("can't get second handle");
+            assert_eq!(Some(&AssetZero(20)), store.get(second_handle));
         };
 
         IntegrationTestApplication::blank()
@@ -815,15 +819,18 @@ mod test {
         let effect_fn = |world: &mut World| {
             // If `LoadingState` is not run before this, this will panic
             world.read_resource::<LoadResource>();
-
-            let handles = vec![AssetZeroLoader::load(world, AssetZero(10)).unwrap()];
+            let handle = AssetZeroLoader::load(world, AssetZero(10)).expect("could not load asset zero");
+            let handles = vec![handle];
             world.insert(handles);
         };
         let assertion_fn = |world: &mut World| {
             let asset_translation_zero_handles = world.read_resource::<Vec<AssetZeroHandle>>();
 
             let store = world.read_resource::<AssetStorage<AssetZero>>();
-            assert_eq!(Some(&AssetZero(10)), store.get(&asset_translation_zero_handles[0]));
+            let handle = &asset_translation_zero_handles
+                .first()
+                .expect("there shandle should be a handle");
+            assert_eq!(Some(&AssetZero(10)), store.get(handle));
         };
 
         IntegrationTestApplication::blank()
@@ -852,12 +859,6 @@ mod test {
 
     #[test]
     fn with_system_runs_system_every_tick() -> Result<(), Error> {
-        let effect_fn = |world: &mut World| {
-            let entity = world.create_entity().with(ComponentZero(0)).build();
-
-            world.insert(EffectReturn(entity));
-        };
-
         fn get_component_zero_value(world: &mut World) -> i32 {
             let entity = world.read_resource::<EffectReturn<Entity>>().0;
 
@@ -867,6 +868,12 @@ mod test {
                 .expect("Entity should have a `ComponentZero` component.");
 
             component_zero.0
+        };
+
+        let effect_fn = |world: &mut World| {
+            let entity = world.create_entity().with(ComponentZero(0)).build();
+
+            world.insert(EffectReturn(entity));
         };
 
         IntegrationTestApplication::blank()
@@ -1099,7 +1106,7 @@ mod test {
         E: Send + Sync + 'static,
     {
         fn update(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) -> Trans<CustomGameData<'a, 'b>, E> {
-            data.data.update(&data.world, true);
+            data.data.update(data.world, true);
             data.world.insert(LoadResource);
             Trans::Switch(Box::new(self.next_state.take().unwrap()))
         }
@@ -1119,7 +1126,7 @@ mod test {
         E: Send + Sync + 'static,
     {
         fn new(next_state: S) -> Self {
-            SwitchState {
+            Self {
                 next_state: Some(next_state),
                 state_data: PhantomData,
             }
@@ -1213,7 +1220,7 @@ mod test {
         type Storage = DenseVecStorage<Self>;
     }
     impl From<AssetZero> for Result<ProcessingState<AssetZero>, Error> {
-        fn from(asset_translation_zero: AssetZero) -> Result<ProcessingState<AssetZero>, Error> {
+        fn from(asset_translation_zero: AssetZero) -> Self {
             Ok(ProcessingState::Loaded(asset_translation_zero))
         }
     }

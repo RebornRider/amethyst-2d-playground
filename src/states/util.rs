@@ -10,7 +10,7 @@ use std::iter;
 
 /// delete the specified root entity and all of its descendents as specified
 /// by the Parent component and maintained by the `ParentHierarchy` resource
-/// from https://github.com/amethyst/evoli/src/utils/hierarchy_util.rs
+/// from <https://github.com/amethyst/evoli/src/utils/hierarchy_util.rs>
 pub fn delete_hierarchy(root: Entity, world: &mut World) -> Result<(), WrongGeneration> {
     let entities = {
         iter::once(root)

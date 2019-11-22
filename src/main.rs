@@ -119,16 +119,16 @@ fn build_game_data(
         return Err(Error::from_string("bad display_config_path"));
     }
 
-    let builder = match cfg!(test) {
-        true => CustomGameDataBuilder::default(),
-        // Audio breaks windows test CI
-        false => CustomGameDataBuilder::default()
+    let builder = if cfg!(test) {
+        CustomGameDataBuilder::default()
+    } else {
+        CustomGameDataBuilder::default()
             .with_base_bundle(AudioBundle::default())
             .with_base(
                 DjSystemDesc::new(|music: &mut Music| music.music.next()),
                 "dj_system",
                 &[],
-            ),
+            )
     };
     let builder = builder
         .with_base_bundle(TransformBundle::new())
@@ -149,9 +149,10 @@ fn build_game_data(
 }
 
 fn quit_during_tests<'a, 'b>() -> Trans<CustomGameData<'a, 'b>, GameStateEvent> {
-    match cfg!(test) {
-        true => Trans::Quit,
-        false => Trans::None,
+    if cfg!(test) {
+        Trans::Quit
+    } else {
+        Trans::None
     }
 }
 
@@ -232,7 +233,6 @@ where
 mod tests {
     use super::*;
     use amethyst::core::{ecs::Write, shrev::EventChannel};
-    use amethyst_test::AmethystApplication;
     use std::panic;
     use std::path::PathBuf;
 
@@ -250,7 +250,7 @@ mod tests {
         MockEventT: Send + Sync + 'static,
         E: Send + Sync + 'static,
     {
-        pub fn to_state<FnT>(next_state: FnT) -> Self
+        pub fn test_state<FnT>(next_state: FnT) -> Self
         where
             FnT: Fn(&mut World) -> Box<dyn State<CustomGameDataT, E>> + Send + Sync + 'static,
         {

@@ -417,7 +417,7 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::CloseRequested,
@@ -451,7 +451,7 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::KeyboardInput {
@@ -493,7 +493,7 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::HoveredFileCancelled,
@@ -527,7 +527,7 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(Pong::default()))
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
                     .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
             })
             .run();

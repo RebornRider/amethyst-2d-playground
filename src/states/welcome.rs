@@ -97,7 +97,7 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::MouseInput {
@@ -123,7 +123,7 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::HoveredFileCancelled,
@@ -144,7 +144,7 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::KeyboardInput {
@@ -164,7 +164,7 @@ mod tests {
     }
 
     #[test]
-    fn _event() {
+    fn window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
@@ -173,7 +173,7 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| unsafe {
                     Event::WindowEvent {
                         window_id: WindowId::dummy(),
                         event: WindowEvent::CloseRequested,
@@ -194,7 +194,7 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default()))
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default()))
                     .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
             })
             .run();
@@ -211,11 +211,11 @@ mod tests {
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
-                SendMockEvents::to_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| InputEvent::<
-                    StringBindings,
-                >::CursorMoved {
-                    delta_x: 0.0,
-                    delta_y: 0.0,
+                SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| {
+                    InputEvent::<StringBindings>::CursorMoved {
+                        delta_x: 0.0,
+                        delta_y: 0.0,
+                    }
                 })
             })
             .run();
