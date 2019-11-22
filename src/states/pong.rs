@@ -1,5 +1,5 @@
 use crate::game_data::CustomGameData;
-use crate::test_harness::IntegrationTestApplication;
+
 use crate::{
     states::{delete_hierarchy, GameplayState, PauseMenuState},
     systems::ScoreText,
@@ -370,7 +370,7 @@ mod tests {
     #[test]
     fn pong_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -397,7 +397,7 @@ mod tests {
     #[test]
     fn is_close_requested() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -431,7 +431,7 @@ mod tests {
     #[test]
     fn escape_key() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -473,7 +473,7 @@ mod tests {
     #[test]
     fn unhandled_window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -507,7 +507,7 @@ mod tests {
     #[test]
     fn unhandled_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))

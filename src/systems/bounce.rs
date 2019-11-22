@@ -1,4 +1,3 @@
-use crate::test_harness::IntegrationTestApplication;
 use crate::{
     audio::{play_bounce, Sounds},
     Ball, Paddle, Side,
@@ -81,11 +80,11 @@ fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -
 #[cfg(test)]
 mod tests {
     use super::*;
+    
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,
         states::{initialise_ball, initialise_paddles, load_sprite_sheet},
-        GameStateEvent, GameStateEventReader,
     };
     use amethyst::{
         assets::AssetStorage,
@@ -94,7 +93,6 @@ mod tests {
         prelude::Builder,
         renderer::{SpriteRender, SpriteSheet, Texture},
     };
-    use amethyst_test::AmethystApplication;
     use assert_approx_eq::assert_approx_eq;
     use test_case::test_case;
 
@@ -115,7 +113,7 @@ mod tests {
     #[test]
     fn basic_bounce_system_setup() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -160,7 +158,7 @@ mod tests {
     #[test]
     fn paddle_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -214,7 +212,7 @@ mod tests {
     #[test]
     fn no_paddle_reflect_if_going_into_direction_of_paddle() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -268,7 +266,7 @@ mod tests {
     #[test]
     fn bottom_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);

@@ -1,4 +1,3 @@
-use crate::test_harness::IntegrationTestApplication;
 use amethyst::{
     core::SystemDesc,
     derive::SystemDesc,
@@ -37,7 +36,7 @@ impl<'a> System<'a> for UiEventHandlerSystem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{setup_loader_for_test, GameStateEvent, GameStateEventReader};
+    use crate::setup_loader_for_test;
     use amethyst::{
         core::TransformBundle,
         ecs::prelude::WorldExt,
@@ -47,12 +46,12 @@ mod tests {
         utils::fps_counter::FpsCounterBundle,
         window::ScreenDimensions,
     };
-    use amethyst_test::AmethystApplication;
+    
 
     #[test]
     fn handle_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()

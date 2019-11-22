@@ -1,4 +1,3 @@
-use crate::test_harness::IntegrationTestApplication;
 use crate::{audio::Sounds, Ball, ScoreBoard};
 use amethyst::{
     assets::AssetStorage,
@@ -90,6 +89,7 @@ pub struct ScoreText {
 #[cfg(test)]
 mod tests {
     use super::*;
+    
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,
@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_left_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
@@ -172,7 +172,7 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_right_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()

@@ -14,7 +14,7 @@ use amethyst::{
         EventReader,
     },
     core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
-    core::{RunNowDesc, SystemBundle, SystemDesc},
+    core::{SystemBundle, SystemDesc},
     derive::EventReader,
     ecs::prelude::*,
     ecs::{Component, DenseVecStorage},

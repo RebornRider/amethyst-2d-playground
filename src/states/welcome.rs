@@ -1,12 +1,12 @@
 use crate::audio::initialise_audio;
 #[cfg(not(test))]
 use crate::audio::set_sink_volume;
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
-use crate::test_harness::IntegrationTestApplication;
+use crate::game_data::CustomGameData;
+
 use crate::{
     quit_during_tests,
     states::{util::delete_hierarchy, GameplayState},
-    GameStateEvent, GameStateEventReader,
+    GameStateEvent,
 };
 use amethyst::{
     ecs::prelude::Entity,
@@ -75,7 +75,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_harness::IntegrationTestApplication;
+    
     use crate::{setup_loader_for_test, tests::SendMockEvents};
     use amethyst::{
         assets::AssetStorage,
@@ -85,12 +85,12 @@ mod tests {
         ui::{UiEvent, UiEventType},
         winit::*,
     };
-    use amethyst_test::AmethystApplication;
+    
 
     #[test]
     fn left_mouse_button() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -116,7 +116,7 @@ mod tests {
     #[test]
     fn unhandled_window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -137,7 +137,7 @@ mod tests {
     #[test]
     fn escape_key() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -187,7 +187,7 @@ mod tests {
     #[test]
     fn unhandled_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -204,7 +204,7 @@ mod tests {
     #[test]
     fn unhandled_input_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);

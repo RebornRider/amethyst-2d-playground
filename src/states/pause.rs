@@ -1,6 +1,5 @@
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
+use crate::game_data::CustomGameData;
 use crate::states::MainMenu;
-use crate::test_harness::IntegrationTestApplication;
 use crate::{quit_during_tests, GameStateEvent};
 use amethyst::{
     ecs::Entity,
@@ -131,7 +130,7 @@ mod tests {
     #[test]
     fn test_pause_menu_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_setup(|world| {
                 setup_loader_for_test(world);
             })

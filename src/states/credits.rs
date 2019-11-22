@@ -1,6 +1,5 @@
 use crate::game_data::CustomGameData;
 use crate::states::{util::delete_hierarchy, MainMenu};
-use crate::test_harness::IntegrationTestApplication;
 use crate::{quit_during_tests, GameStateEvent};
 use amethyst::{
     ecs::prelude::Entity,
@@ -72,7 +71,7 @@ mod tests {
     #[test]
     fn test_credits_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);

@@ -8,7 +8,6 @@ use amethyst::{
 
 use crate::game_data::CustomGameData;
 use crate::states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen};
-use crate::test_harness::IntegrationTestApplication;
 use crate::GameStateEvent;
 
 const BUTTON_START: &str = "start";
@@ -118,12 +117,11 @@ mod tests {
     use super::*;
     use crate::setup_loader_for_test;
     use amethyst::core::transform::TransformBundle;
-    use amethyst_test::AmethystApplication;
 
     #[test]
     fn test_main_menu_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);

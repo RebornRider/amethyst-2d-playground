@@ -1,4 +1,3 @@
-use crate::test_harness::IntegrationTestApplication;
 use amethyst::{
     core::transform::ParentHierarchy,
     ecs::{
@@ -23,17 +22,15 @@ pub fn delete_hierarchy(root: Entity, world: &mut World) -> Result<(), WrongGene
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::GameStateEvent;
-    use crate::GameStateEventReader;
+    
     use amethyst::core::transform::TransformBundle;
     use amethyst::core::Parent;
     use amethyst::prelude::Builder;
-    use amethyst_test::AmethystApplication;
 
     #[test]
     fn test_delete_single_entity() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_assertion(|world| {
                 let entity = world.create_entity().build();
@@ -51,7 +48,7 @@ mod tests {
     #[test]
     fn test_delete_two_unrelated_entities() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_assertion(|world| {
                 let entity1 = world.create_entity().build();
@@ -73,7 +70,7 @@ mod tests {
     #[test]
     fn test_delete_two_related_entities_deleting_child() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = IntegrationTestApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_assertion(|world| {
                 let parent = world.create_entity().build();
