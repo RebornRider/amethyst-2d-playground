@@ -108,7 +108,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         // once deferred creation of the root ui entity finishes, look up buttons
         if self.resume_button.is_none() || self.exit_to_main_menu_button.is_none() || self.exit_button.is_none() {
             data.world.exec(|ui_finder: UiFinder<'_>| {

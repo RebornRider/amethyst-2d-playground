@@ -109,7 +109,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         if let Some(dispatcher) = self.dispatcher.as_mut() {
             dispatcher.dispatch(data.world);
         }
@@ -364,6 +364,7 @@ mod tests {
         renderer::{SpriteRender, SpriteSheet, Texture},
         ui::{UiEvent, UiEventType},
         window::ScreenDimensions,
+        winit,
         winit::*,
     };
 
@@ -460,7 +461,7 @@ mod tests {
                                 scancode: 0,
                                 state: ElementState::Pressed,
                                 virtual_keycode: Some(VirtualKeyCode::Escape),
-                                modifiers: Default::default(),
+                                modifiers: winit::ModifiersState::default(),
                             },
                         },
                     }

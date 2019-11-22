@@ -87,7 +87,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         // only search for buttons if they have not been found yet
         let StateData { world, .. } = data;
 

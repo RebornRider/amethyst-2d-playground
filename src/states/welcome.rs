@@ -46,7 +46,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
         data: StateData<'_, CustomGameData<'_, '_>>,
         event: GameStateEvent,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         match &event {
             GameStateEvent::Window(event) => {
                 if is_close_requested(event) || is_key_down(event, VirtualKeyCode::Escape) {
@@ -67,7 +67,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         quit_during_tests()
     }
 }
@@ -83,6 +83,7 @@ mod tests {
         core::transform::TransformBundle,
         input::{InputEvent, StringBindings},
         ui::{UiEvent, UiEventType},
+        winit,
         winit::*,
     };
 
@@ -103,7 +104,7 @@ mod tests {
                             device_id: DeviceId::dummy(),
                             state: ElementState::Pressed,
                             button: MouseButton::Left,
-                            modifiers: Default::default(),
+                            modifiers: winit::ModifiersState::default(),
                         },
                     }
                 })
@@ -152,7 +153,7 @@ mod tests {
                                 scancode: 0,
                                 state: ElementState::Pressed,
                                 virtual_keycode: Some(VirtualKeyCode::Escape),
-                                modifiers: Default::default(),
+                                modifiers: winit::ModifiersState::default(),
                             },
                         },
                     }

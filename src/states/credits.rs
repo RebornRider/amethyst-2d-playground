@@ -57,7 +57,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(&data.world, true);
+        data.data.update(data.world, true);
         quit_during_tests()
     }
 }

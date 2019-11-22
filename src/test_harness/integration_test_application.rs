@@ -176,6 +176,7 @@ pub struct IntegrationTestApplication {
 
 impl IntegrationTestApplication {
     /// Returns an Amethyst application without any bundles.
+    #[allow(dead_code)]
     pub fn blank() -> Self {
         Self {
             bundle_add_fns: Vec::new(),
@@ -190,8 +191,9 @@ impl IntegrationTestApplication {
     ///
     /// This also adds a `ScreenDimensions` resource to the `World` so that UI calculations can be
     /// done.
-    pub fn ui_base<B: BindingTypes>() -> IntegrationTestApplication {
-        IntegrationTestApplication::blank()
+    #[allow(dead_code)]
+    pub fn ui_base<B: BindingTypes>() -> Self {
+        Self::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<B>()
             .with_resource(ScreenDimensions::new(1920, 1280, 1.0))
@@ -206,6 +208,7 @@ impl IntegrationTestApplication {
     ///
     /// If you are intending to run the `Application`, you can use the `run()` or `run_isolated()`
     /// methods instead.
+    #[allow(dead_code)]
     pub fn build(
         self,
     ) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error>
@@ -255,7 +258,7 @@ impl IntegrationTestApplication {
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        let assets_dir = IntegrationTestApplication::assets_dir().expect("Failed to get default assets dir.");
+        let assets_dir = Self::assets_dir().expect("Failed to get default assets dir.");
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
         {
             let world = &mut application_builder.world;
@@ -298,11 +301,12 @@ impl IntegrationTestApplication {
     /// [mesa]: <https://github.com/rust-windowing/glutin/issues/1038>
     /// [vulkan]: <https://github.com/amethyst/rendy/issues/151>
     /// [audio]: <https://github.com/amethyst/amethyst/issues/1595>
+    #[allow(dead_code)]
     pub fn run_isolated(self) -> Result<(), Error> {
         // Acquire a lock due to memory access issues when using Rendy:
         //
         // See: <https://github.com/amethyst/rendy/issues/151>
-        let _guard = RENDY_MEMORY_MUTEX.lock().unwrap();
+        let _guard = RENDY_MEMORY_MUTEX.lock().expect("can't take look on mutex");
 
         self.run()
     }
@@ -326,6 +330,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `bundle`: Bundle to add.
+    #[allow(dead_code)]
     pub fn with_bundle<B>(mut self, bundle: B) -> Self
     where
         B: SystemBundle<'static, 'static> + 'static,
@@ -392,6 +397,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `resource`: Bundle to add.
+    #[allow(dead_code)]
     pub fn with_resource<Res>(mut self, resource: Res) -> Self
     where
         Res: Resource,
@@ -411,6 +417,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `state_fn`: `State` to use.
+    #[allow(dead_code)]
     pub fn with_state<S, FnStateLocal>(mut self, state_fn: FnStateLocal) -> Self
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
@@ -430,6 +437,7 @@ impl IntegrationTestApplication {
     /// * `system`: `System` to run.
     /// * `name`: Name to register the system with, used for dependency ordering.
     /// * `deps`: Names of systems that must run before this system.
+    #[allow(dead_code)]
     pub fn with_system<S, N>(self, system: S, name: N, deps: &[N]) -> Self
     where
         S: for<'sys_local> System<'sys_local> + Send + 'static,
@@ -451,6 +459,7 @@ impl IntegrationTestApplication {
     /// * `system_desc`: Descriptor to instantiate the `System`.
     /// * `name`: Name to register the system with, used for dependency ordering.
     /// * `deps`: Names of systems that must run before this system.
+    #[allow(dead_code)]
     pub fn with_system_desc<SD, S, N>(self, system_desc: SD, name: N, deps: &[N]) -> Self
     where
         SD: SystemDesc<'static, 'static, S> + Send + Sync + 'static,
@@ -471,6 +480,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `run_now_desc`: Descriptor to instantiate the thread local system.
+    #[allow(dead_code)]
     pub fn with_thread_local<RNDesc, RN>(self, run_now_desc: RNDesc) -> Self
     where
         RNDesc: RunNowDesc<'static, 'static, RN> + Send + Sync + 'static,
@@ -489,6 +499,7 @@ impl IntegrationTestApplication {
     /// * `system`: `System` to run.
     /// * `name`: Name to register the system with, used for dependency ordering.
     /// * `deps`: Names of systems that must run before this system.
+    #[allow(dead_code)]
     pub fn with_system_single<S, N>(self, system: S, name: N, deps: &[N]) -> Self
     where
         S: for<'sys_local> System<'sys_local> + Send + Sync + 'static,
@@ -517,6 +528,7 @@ impl IntegrationTestApplication {
     /// * `system_desc`: Descriptor to instantiate the `System`.
     /// * `name`: Name to register the system with, used for dependency ordering.
     /// * `deps`: Names of systems that must run before this system.
+    #[allow(dead_code)]
     pub fn with_system_desc_single<SD, S, N>(self, system_desc: SD, name: N, deps: &[N]) -> Self
     where
         SD: SystemDesc<'static, 'static, S> + Send + Sync + 'static,
@@ -541,6 +553,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `func`: Function to execute.
+    #[allow(dead_code)]
     pub fn with_fn<F>(self, func: F) -> Self
     where
         F: Fn(&mut World) + Send + Sync + 'static,
@@ -555,6 +568,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `setup_fn`: Function to execute.
+    #[allow(dead_code)]
     pub fn with_setup<F>(mut self, setup_fn: F) -> Self
     where
         F: FnOnce(&mut World) + Send + 'static,
@@ -570,6 +584,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `effect_fn`: Function that executes an effect.
+    #[allow(dead_code)]
     pub fn with_effect<F>(self, effect_fn: F) -> Self
     where
         F: Fn(&mut World) + Send + Sync + 'static,
@@ -584,6 +599,7 @@ impl IntegrationTestApplication {
     /// # Parameters
     ///
     /// * `assertion_fn`: Function that asserts the expected state.
+    #[allow(dead_code)]
     pub fn with_assertion<F>(self, assertion_fn: F) -> Self
     where
         F: Fn(&mut World) + Send + Sync + 'static,

@@ -19,11 +19,11 @@ impl<'a, 'b> CustomGameData<'a, 'b> {
     pub fn update(&mut self, world: &World, running: bool) {
         if running {
             if let Some(running) = &mut self.running {
-                running.dispatch(&world);
+                running.dispatch(world);
             }
         }
         if let Some(base) = &mut self.base {
-            base.dispatch(&world);
+            base.dispatch(world);
         }
     }
 
@@ -149,8 +149,8 @@ fn build_dispatcher<'a, 'b>(
 
     #[cfg(not(no_threading))]
     {
-        let pool = world.read_resource::<ArcThreadPool>().clone();
-        dispatcher_builder = dispatcher_builder.with_pool((*pool).clone());
+        let pool = world.read_resource::<ArcThreadPool>();
+        dispatcher_builder = dispatcher_builder.with_pool(ArcThreadPool::clone(&(*pool)));
     }
 
     dispatcher_operations
