@@ -80,7 +80,7 @@ fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,

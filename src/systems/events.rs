@@ -46,7 +46,6 @@ mod tests {
         utils::fps_counter::FpsCounterBundle,
         window::ScreenDimensions,
     };
-    
 
     #[test]
     fn handle_ui_event() {

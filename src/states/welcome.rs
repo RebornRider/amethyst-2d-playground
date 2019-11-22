@@ -75,7 +75,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::{setup_loader_for_test, tests::SendMockEvents};
     use amethyst::{
         assets::AssetStorage,
@@ -85,7 +85,6 @@ mod tests {
         ui::{UiEvent, UiEventType},
         winit::*,
     };
-    
 
     #[test]
     fn left_mouse_button() {

@@ -22,7 +22,7 @@ pub fn delete_hierarchy(root: Entity, world: &mut World) -> Result<(), WrongGene
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use amethyst::core::transform::TransformBundle;
     use amethyst::core::Parent;
     use amethyst::prelude::Builder;

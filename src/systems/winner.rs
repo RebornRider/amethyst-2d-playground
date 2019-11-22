@@ -89,7 +89,7 @@ pub struct ScoreText {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,
