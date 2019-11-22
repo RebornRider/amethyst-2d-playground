@@ -1,26 +1,41 @@
 mod audio;
+mod game_data;
 mod states;
 mod systems;
 
+use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 use amethyst::{
     assets::HotReloadBundle,
     audio::{AudioBundle, DjSystemDesc},
+    core::{
+        ecs::{Read, SystemData, World},
+        shrev::{EventChannel, ReaderId},
+        EventReader,
+    },
     core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
+    core::{RunNowDesc, SystemBundle, SystemDesc},
+    derive::EventReader,
+    ecs::prelude::*,
     ecs::{Component, DenseVecStorage},
     error::Error,
-    input::{InputBundle, StringBindings},
+    input::InputBundle,
+    input::{BindingTypes, InputEvent, StringBindings},
     prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
         RenderingBundle,
     },
-    ui::{RenderUi, UiBundle},
-    utils::{application_root_dir, fps_counter::FpsCounterBundle},
+    ui::RenderUi,
+    ui::UiBundle,
+    ui::UiEvent,
+    utils::application_root_dir,
+    utils::fps_counter::FpsCounterBundle,
+    winit::Event,
 };
-
-use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
+use derivative::Derivative;
 extern crate dunce;
+use crate::game_data::{CustomGameData, CustomGameDataBuilder};
 use std::{path, time::Duration};
 
 const ARENA_HEIGHT: f32 = 90.0;
@@ -72,10 +87,15 @@ fn initialize_app_root() -> Result<path::PathBuf, Error> {
     Ok(app_root)
 }
 
-fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+fn build_game(
+) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error> {
     let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
     let game_data = build_game_data(display_config_path, key_bindings_path)?;
-    let game = Application::build(assets_dir, states::WelcomeScreen::default())?
+    let game =
+        CoreApplication::<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>::build(
+            assets_dir,
+            states::WelcomeScreen::default(),
+        )?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
         .build(game_data)?;
     Ok(game)
@@ -84,7 +104,7 @@ fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, 
 fn build_game_data(
     display_config_path: path::PathBuf,
     key_bindings_path: path::PathBuf,
-) -> Result<GameDataBuilder<'static, 'static>, Error> {
+) -> Result<CustomGameDataBuilder<'static, 'static>, Error> {
     use log::warn;
     if key_bindings_path.as_path().exists() == false || key_bindings_path.as_path().is_file() == false {
         let path = key_bindings_path.into_os_string();
@@ -99,34 +119,35 @@ fn build_game_data(
     }
 
     let builder = match cfg!(test) {
-        true => GameDataBuilder::default(),
+        true => CustomGameDataBuilder::default(),
         // Audio breaks windows test CI
-        false => GameDataBuilder::default()
-            .with_bundle(AudioBundle::default())?
-            .with_system_desc(
+        false => CustomGameDataBuilder::default()
+            .with_base_bundle(AudioBundle::default())
+            .with_base(
                 DjSystemDesc::new(|music: &mut Music| music.music.next()),
                 "dj_system",
                 &[],
             ),
     };
-    builder
-        .with_bundle(TransformBundle::new())?
-        .with_bundle(HotReloadBundle::default())?
-        .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-        .with_bundle(FpsCounterBundle::default())?
-        .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
-        .with_bundle(UiBundle::<StringBindings>::new())?
-        .with_bundle(
+    let builder = builder
+        .with_base_bundle(TransformBundle::new())
+        .with_base_bundle(HotReloadBundle::default())
+        .with_base_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)
+        .with_base_bundle(FpsCounterBundle::default())
+        .with_base(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
+        .with_base_bundle(UiBundle::<StringBindings>::new())
+        .with_base_bundle(
             RenderingBundle::<DefaultBackend>::new()
             // The RenderToWindow plugin provides all the scaffolding for opening a window and
             // drawing on it
             .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
-        )
+        );
+    Ok(builder)
 }
 
-fn quit_during_tests() -> Trans<GameData<'static, 'static>, StateEvent> {
+fn quit_during_tests<'a, 'b>() -> Trans<CustomGameData<'a, 'b>, GameStateEvent> {
     match cfg!(test) {
         true => Trans::Quit,
         false => Trans::None,
@@ -181,6 +202,29 @@ impl ScoreBoard {
             score_right: 0,
         }
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum TestEvent {
+    Quit,
+    Pop,
+    Panic,
+}
+
+#[derive(Debug, Derivative, EventReader)]
+#[derivative(Clone(bound = ""))]
+#[reader(GameStateEventReader)]
+pub enum GameStateEvent<T = StringBindings>
+where
+    T: BindingTypes,
+{
+    /// Events sent by the winit window.
+    Window(Event),
+    /// Events sent by the ui system.
+    Ui(UiEvent),
+    /// Events sent by the input system.
+    Input(InputEvent<T>),
+    Test(TestEvent),
 }
 
 #[cfg(test)]
