@@ -1,7 +1,6 @@
-use crate::audio::initialise_audio;
 #[cfg(not(test))]
 use crate::audio::set_sink_volume;
-use crate::game_data::CustomGameData;
+use crate::{audio::initialise_audio, game_data::CustomGameData};
 
 use crate::{
     quit_during_tests,

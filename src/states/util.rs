@@ -23,9 +23,10 @@ pub fn delete_hierarchy(root: Entity, world: &mut World) -> Result<(), WrongGene
 mod tests {
     use super::*;
 
-    use amethyst::core::transform::TransformBundle;
-    use amethyst::core::Parent;
-    use amethyst::prelude::Builder;
+    use amethyst::{
+        core::{transform::TransformBundle, Parent},
+        prelude::Builder,
+    };
 
     #[test]
     fn test_delete_single_entity() {

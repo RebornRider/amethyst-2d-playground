@@ -29,7 +29,15 @@ impl<'s> System<'s> for WinnerSystem {
 
     fn run(
         &mut self,
-        (mut balls, mut transforms, mut text, mut score_board, storage, sounds, score_text, audio_output, fps_counter): Self::SystemData,
+        (mut balls,
+            mut transforms,
+            mut text,
+            mut score_board,
+            storage,
+            sounds,
+            score_text,
+            audio_output,
+            fps_counter): Self::SystemData,
     ) {
         if let Some(text) = text.get_mut(score_text.fps_display) {
             let fps = fps_counter.sampled_fps();

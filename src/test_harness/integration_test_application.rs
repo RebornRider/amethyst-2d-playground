@@ -1,7 +1,9 @@
 use std::{any::Any, marker::PhantomData, panic, path::PathBuf, sync::Mutex};
 
-use crate::game_data::{CustomGameData, CustomGameDataBuilder};
-use crate::{GameStateEvent, GameStateEventReader};
+use crate::{
+    game_data::{CustomGameData, CustomGameDataBuilder},
+    GameStateEvent, GameStateEventReader,
+};
 use amethyst::{
     self,
     core::{transform::TransformBundle, RunNowDesc, SystemBundle, SystemDesc},
@@ -118,15 +120,13 @@ pub struct EffectReturn<T>(pub T);
 type BundleAddFn = Box<dyn FnOnce(CustomGameDataBuilder<'static, 'static>) -> CustomGameDataBuilder<'static, 'static>>;
 // Hack: Ideally we want a `SendBoxFnOnce`. However implementing it got too crazy:
 //
-// * When taking in `ApplicationBuilder<StateLocal>` as a parameter, I couldn't get the type
-//   parameters to be happy. `StateLocal` had to change depending on the first state, but it
-//   couldn't be consolidated with `T`.
-// * When using `SendBoxFnOnce<'w, (&'w mut World,)>`, the lifetime parameter for the function and
-//   the `World` could not agree &mdash; you can't coerce a `SendBoxFnOnce<'longer>` into a
-//   `SendBoxFnOnce<'shorter>`, which was necessary to indicate the length of the borrow of `World`
-//   for the function is not the `'w` needed to store the function in `IntegrationTestApplication`.
-//   In addition, it requires the `World` (and hence the `ApplicationBuilder`) to be instantiated
-//   in a scope greater than the `IntegrationTestApplication`'s lifetime, which detracts from the
+// * When taking in `ApplicationBuilder<StateLocal>` as a parameter, I couldn't get the type parameters to be happy.
+//   `StateLocal` had to change depending on the first state, but it couldn't be consolidated with `T`.
+// * When using `SendBoxFnOnce<'w, (&'w mut World,)>`, the lifetime parameter for the function and the `World` could not
+//   agree &mdash; you can't coerce a `SendBoxFnOnce<'longer>` into a `SendBoxFnOnce<'shorter>`, which was necessary to
+//   indicate the length of the borrow of `World` for the function is not the `'w` needed to store the function in
+//   `IntegrationTestApplication`. In addition, it requires the `World` (and hence the `ApplicationBuilder`) to be
+//   instantiated in a scope greater than the `IntegrationTestApplication`'s lifetime, which detracts from the
 //   ergonomics of this test harness.
 type FnResourceAdd = Box<dyn FnMut(&mut World) + Send>;
 type FnSetup = Box<dyn FnOnce(&mut World) + Send>;
@@ -319,8 +319,8 @@ impl IntegrationTestApplication {
             Error::from_string((*inner).to_string())
         } else {
             Error::from_string(
-                "Unable to detect additional information from test failure.\n\
-                 Please inspect the test output for clues.",
+                "Unable to detect additional information from test failure.\nPlease inspect the test \
+                 output for clues.",
             )
         }
     }
@@ -338,12 +338,10 @@ impl IntegrationTestApplication {
         // We need to use `SendBoxFnOnce` because:
         //
         // * `FnOnce` takes itself by value when you call it.
-        // * To pass a `FnOnce` around (transferring ownership), it must be boxed, since it's not
-        //   `Sized`.
+        // * To pass a `FnOnce` around (transferring ownership), it must be boxed, since it's not `Sized`.
         // * A `Box<FnOnce()>` is a `Sized` type with a reference to the `FnOnce`
-        // * To call the function inside the `Box<FnOnce()>`, it must be moved out of the box
-        //   because we need to own the `FnOnce` to be able to call it by value, whereas the `Box`
-        //   only holds the reference.
+        // * To call the function inside the `Box<FnOnce()>`, it must be moved out of the box because we need to own the
+        //   `FnOnce` to be able to call it by value, whereas the `Box` only holds the reference.
         // * To own it, we would have to move it onto the stack.
         // * However, since it's not `Sized`, we can't do that.
         //
@@ -1060,7 +1058,7 @@ mod test {
         fn update(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) -> Trans<CustomGameData<'a, 'b>, E> {
             data.data.update(data.world, true);
             data.world.insert(LoadResource);
-            Trans::Switch(Box::new(self.next_state.take().unwrap()))
+            Trans::Switch(Box::new(self.next_state.take().expect("no next state")))
         }
     }
 
@@ -1091,7 +1089,7 @@ mod test {
             &mut self,
             _data: StateData<'_, CustomGameData<'_, '_>>,
         ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-            Trans::Switch(Box::new(self.next_state.take().unwrap()))
+            Trans::Switch(Box::new(self.next_state.take().expect("no next state")))
         }
     }
 
@@ -1100,6 +1098,7 @@ mod test {
     struct SystemZero;
     impl<'s> System<'s> for SystemZero {
         type SystemData = ();
+
         fn run(&mut self, _: Self::SystemData) {}
     }
 
@@ -1108,6 +1107,7 @@ mod test {
     type SystemOneData<'s> = Read<'s, ApplicationResource>;
     impl<'s> System<'s> for SystemOne {
         type SystemData = SystemOneData<'s>;
+
         fn run(&mut self, _: Self::SystemData) {}
     }
 
@@ -1117,6 +1117,7 @@ mod test {
     type SystemNonDefaultData<'s> = ReadExpect<'s, ApplicationResourceNonDefault>;
     impl<'s> System<'s> for SystemNonDefault {
         type SystemData = SystemNonDefaultData<'s>;
+
         fn run(&mut self, _: Self::SystemData) {}
     }
 
@@ -1125,6 +1126,7 @@ mod test {
     type SystemEffectData<'s> = WriteStorage<'s, ComponentZero>;
     impl<'s> System<'s> for SystemEffect {
         type SystemData = SystemEffectData<'s>;
+
         fn run(&mut self, mut component_zero_storage: Self::SystemData) {
             for mut component_zero in (&mut component_zero_storage).join() {
                 component_zero.0 += 1
@@ -1165,9 +1167,10 @@ mod test {
     #[derive(Debug, PartialEq)]
     struct AssetZero(u32);
     impl Asset for AssetZero {
-        const NAME: &'static str = "amethyst_test::AssetZero";
         type Data = Self;
         type HandleStorage = VecStorage<Handle<Self>>;
+
+        const NAME: &'static str = "amethyst_test::AssetZero";
     }
     impl Component for AssetZero {
         type Storage = DenseVecStorage<Self>;

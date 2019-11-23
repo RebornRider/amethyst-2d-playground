@@ -354,8 +354,7 @@ pub fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tests::SendMockEvents;
-    use crate::{audio::initialise_audio, setup_loader_for_test};
+    use crate::{audio::initialise_audio, setup_loader_for_test, tests::SendMockEvents};
     use amethyst::{
         assets::AssetStorage,
         audio::Source,

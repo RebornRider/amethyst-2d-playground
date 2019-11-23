@@ -1,6 +1,4 @@
-use crate::game_data::CustomGameData;
-use crate::states::MainMenu;
-use crate::{quit_during_tests, GameStateEvent};
+use crate::{game_data::CustomGameData, quit_during_tests, states::MainMenu, GameStateEvent};
 use amethyst::{
     ecs::Entity,
     input::{is_close_requested, is_key_down},

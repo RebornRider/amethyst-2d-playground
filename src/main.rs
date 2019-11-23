@@ -10,26 +10,23 @@ use amethyst::{
     audio::{AudioBundle, DjSystemDesc},
     core::{
         ecs::{Read, SystemData, World},
+        frame_limiter::FrameRateLimitStrategy,
         shrev::{EventChannel, ReaderId},
+        transform::TransformBundle,
         EventReader,
     },
-    core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
     derive::EventReader,
     ecs::{Component, DenseVecStorage},
     error::Error,
-    input::InputBundle,
-    input::{BindingTypes, InputEvent, StringBindings},
+    input::{BindingTypes, InputBundle, InputEvent, StringBindings},
     prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
         RenderingBundle,
     },
-    ui::RenderUi,
-    ui::UiBundle,
-    ui::UiEvent,
-    utils::application_root_dir,
-    utils::fps_counter::FpsCounterBundle,
+    ui::{RenderUi, UiBundle, UiEvent},
+    utils::{application_root_dir, fps_counter::FpsCounterBundle},
     winit::Event,
 };
 use derivative::Derivative;
@@ -231,8 +228,7 @@ where
 mod tests {
     use super::*;
     use amethyst::core::{ecs::Write, shrev::EventChannel};
-    use std::panic;
-    use std::path::PathBuf;
+    use std::{panic, path::PathBuf};
 
     pub struct SendMockEvents<MockEventT, CustomGameDataT, StateEventT>
     where
@@ -280,7 +276,7 @@ mod tests {
             {
                 if let Some(mock_event) = self.mock_events.pop() {
                     let event = (mock_event)(data.world);
-                    let mut events: (Write<EventChannel<MockEventT>>) = data.world.system_data();
+                    let mut events: Write<EventChannel<MockEventT>> = data.world.system_data();
                     events.single_write(event);
                 }
             }

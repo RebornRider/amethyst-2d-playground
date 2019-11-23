@@ -1,6 +1,9 @@
-use crate::game_data::CustomGameData;
-use crate::states::{util::delete_hierarchy, MainMenu};
-use crate::{quit_during_tests, GameStateEvent};
+use crate::{
+    game_data::CustomGameData,
+    quit_during_tests,
+    states::{util::delete_hierarchy, MainMenu},
+    GameStateEvent,
+};
 use amethyst::{
     ecs::prelude::Entity,
     input::{is_close_requested, is_key_down, is_mouse_button_down},

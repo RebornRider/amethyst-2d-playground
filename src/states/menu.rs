@@ -6,9 +6,11 @@ use amethyst::{
     winit::VirtualKeyCode,
 };
 
-use crate::game_data::CustomGameData;
-use crate::states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen};
-use crate::GameStateEvent;
+use crate::{
+    game_data::CustomGameData,
+    states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen},
+    GameStateEvent,
+};
 
 const BUTTON_START: &str = "start";
 const BUTTON_LOAD: &str = "load";
