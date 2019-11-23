@@ -71,25 +71,27 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::setup_loader_for_test;
+    use crate::{setup_loader_for_test, GameStateEvent, GameStateEventReader};
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
     #[test]
     fn test_initialise_audio() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_setup(|world| {
-                setup_loader_for_test(world);
-                world.insert(AssetStorage::<Source>::default());
-                initialise_audio(world);
-            })
-            .with_assertion(|world| {
-                world.read_resource::<Music>();
-                world.read_resource::<Sounds>();
-            })
-            .run();
+        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
+            AmethystApplication::blank(),
+        )
+        .with_bundle(TransformBundle::new())
+        .with_setup(|world| {
+            setup_loader_for_test(world);
+            world.insert(AssetStorage::<Source>::default());
+            initialise_audio(world);
+        })
+        .with_assertion(|world| {
+            world.read_resource::<Music>();
+            world.read_resource::<Sounds>();
+        })
+        .run();
         assert!(test_result.is_ok());
     }
 }

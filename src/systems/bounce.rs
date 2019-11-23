@@ -9,7 +9,6 @@ use amethyst::{
     derive::SystemDesc,
     ecs::prelude::{Join, Read, ReadExpect, ReadStorage, System, SystemData, World, WriteStorage},
 };
-
 /// This system is responsible for detecting collisions between balls and
 /// paddles, as well as balls and the top and bottom edges of the arena.
 #[derive(SystemDesc)]
@@ -37,7 +36,9 @@ impl<'s> System<'s> for BounceSystem {
             let ball_y = transform.translation().y;
 
             // Bounce at the top or the bottom of the arena.
-            if (ball_y <= ball.radius && ball.velocity[1] < 0.0) || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0) {
+            if (ball_y <= ball.radius && ball.velocity[1] < 0.0)
+                || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0)
+            {
                 ball.velocity[1] = -ball.velocity[1];
                 play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
             }
@@ -59,7 +60,8 @@ impl<'s> System<'s> for BounceSystem {
                     paddle_y - ball.radius,
                     paddle_x + (paddle.width + ball.radius),
                     paddle_y + (paddle.height + ball.radius),
-                ) && ((paddle.side == Side::Left && ball.velocity[0] < 0.0) || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
+                ) && ((paddle.side == Side::Left && ball.velocity[0] < 0.0)
+                    || (paddle.side == Side::Right && ball.velocity[0] > 0.0))
                 {
                     ball.velocity[0] = -ball.velocity[0];
                     play_bounce(&*sounds, &storage, audio_output.as_ref().map(std::ops::Deref::deref));
@@ -78,6 +80,7 @@ fn point_in_rect(x: f32, y: f32, left: f32, bottom: f32, right: f32, top: f32) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,
@@ -90,7 +93,6 @@ mod tests {
         prelude::Builder,
         renderer::{SpriteRender, SpriteSheet, Texture},
     };
-    use amethyst_test::AmethystApplication;
     use assert_approx_eq::assert_approx_eq;
     use test_case::test_case;
 
@@ -111,7 +113,7 @@ mod tests {
     #[test]
     fn basic_bounce_system_setup() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -137,7 +139,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+                            None,
+                        );
                     }
                 }
             })
@@ -149,7 +158,7 @@ mod tests {
     #[test]
     fn paddle_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -175,7 +184,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [-1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [-1.0, BALL_VELOCITY_Y],
+                            Some([0.0, ARENA_HEIGHT / 2.0]),
+                        );
                     }
                 }
             })
@@ -196,7 +212,7 @@ mod tests {
     #[test]
     fn no_paddle_reflect_if_going_into_direction_of_paddle() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -222,7 +238,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_HEIGHT, BALL_RADIUS, BALL_VELOCITY_Y};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [1.0, BALL_VELOCITY_Y], Some([0.0, ARENA_HEIGHT / 2.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [1.0, BALL_VELOCITY_Y],
+                            Some([0.0, ARENA_HEIGHT / 2.0]),
+                        );
                     }
                 }
             })
@@ -243,7 +266,7 @@ mod tests {
     #[test]
     fn bottom_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_setup(|world| {
                 setup_loader_for_test(world);
@@ -269,7 +292,14 @@ mod tests {
                     }
                     if let Some(sprite_sheet) = sprite_sheet_handle {
                         use crate::{ARENA_WIDTH, BALL_RADIUS, BALL_VELOCITY_X};
-                        initialise_ball(world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, -10.0], Some([ARENA_WIDTH / 2.0, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [BALL_VELOCITY_X, -10.0],
+                            Some([ARENA_WIDTH / 2.0, 0.0]),
+                        );
                     }
                 }
             })

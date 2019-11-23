@@ -1,26 +1,37 @@
 mod audio;
+mod game_data;
 mod states;
 mod systems;
+mod test_harness;
 
+use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 use amethyst::{
     assets::HotReloadBundle,
     audio::{AudioBundle, DjSystemDesc},
-    core::{frame_limiter::FrameRateLimitStrategy, transform::TransformBundle},
+    core::{
+        ecs::{Read, SystemData, World},
+        frame_limiter::FrameRateLimitStrategy,
+        shrev::{EventChannel, ReaderId},
+        transform::TransformBundle,
+        EventReader,
+    },
+    derive::EventReader,
     ecs::{Component, DenseVecStorage},
     error::Error,
-    input::{InputBundle, StringBindings},
+    input::{BindingTypes, InputBundle, InputEvent, StringBindings},
     prelude::*,
     renderer::{
         plugins::{RenderFlat2D, RenderToWindow},
         types::DefaultBackend,
         RenderingBundle,
     },
-    ui::{RenderUi, UiBundle},
+    ui::{RenderUi, UiBundle, UiEvent},
     utils::{application_root_dir, fps_counter::FpsCounterBundle},
+    winit::Event,
 };
-
-use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
+use derivative::Derivative;
 extern crate dunce;
+use crate::game_data::{CustomGameData, CustomGameDataBuilder};
 use std::{path, time::Duration};
 
 const ARENA_HEIGHT: f32 = 90.0;
@@ -72,16 +83,24 @@ fn initialize_app_root() -> Result<path::PathBuf, Error> {
     Ok(app_root)
 }
 
-fn build_game() -> Result<CoreApplication<'static, GameData<'static, 'static>>, Error> {
+fn build_game(
+) -> Result<CoreApplication<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>, Error> {
     let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
     let game_data = build_game_data(display_config_path, key_bindings_path)?;
-    let game = Application::build(assets_dir, states::WelcomeScreen::default())?
+    let game =
+        CoreApplication::<'static, CustomGameData<'static, 'static>, GameStateEvent, GameStateEventReader>::build(
+            assets_dir,
+            states::WelcomeScreen::default(),
+        )?
         .with_frame_limit(FrameRateLimitStrategy::SleepAndYield(Duration::from_millis(2)), 144)
         .build(game_data)?;
     Ok(game)
 }
 
-fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::PathBuf) -> Result<GameDataBuilder<'static, 'static>, Error> {
+fn build_game_data(
+    display_config_path: path::PathBuf,
+    key_bindings_path: path::PathBuf,
+) -> Result<CustomGameDataBuilder<'static, 'static>, Error> {
     use log::warn;
     if key_bindings_path.as_path().exists() == false || key_bindings_path.as_path().is_file() == false {
         let path = key_bindings_path.into_os_string();
@@ -95,34 +114,40 @@ fn build_game_data(display_config_path: path::PathBuf, key_bindings_path: path::
         return Err(Error::from_string("bad display_config_path"));
     }
 
-    let builder = match cfg!(test) {
-        true => GameDataBuilder::default(),
-        // Audio breaks windows test CI
-        false => GameDataBuilder::default()
-            .with_bundle(AudioBundle::default())?
-            .with_system_desc(DjSystemDesc::new(|music: &mut Music| music.music.next()), "dj_system", &[]),
+    let builder = if cfg!(test) {
+        CustomGameDataBuilder::default()
+    } else {
+        CustomGameDataBuilder::default()
+            .with_base_bundle(AudioBundle::default())
+            .with_base(
+                DjSystemDesc::new(|music: &mut Music| music.music.next()),
+                "dj_system",
+                &[],
+            )
     };
-    builder
-        .with_bundle(TransformBundle::new())?
-        .with_bundle(HotReloadBundle::default())?
-        .with_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)?
-        .with_bundle(FpsCounterBundle::default())?
-        .with_system_desc(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
-        .with_bundle(UiBundle::<StringBindings>::new())?
-        .with_bundle(
+    let builder = builder
+        .with_base_bundle(TransformBundle::new())
+        .with_base_bundle(HotReloadBundle::default())
+        .with_base_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)
+        .with_base_bundle(FpsCounterBundle::default())
+        .with_base(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
+        .with_base_bundle(UiBundle::<StringBindings>::new())
+        .with_base_bundle(
             RenderingBundle::<DefaultBackend>::new()
             // The RenderToWindow plugin provides all the scaffolding for opening a window and
             // drawing on it
             .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
-        )
+        );
+    Ok(builder)
 }
 
-fn quit_during_tests() -> Trans<GameData<'static, 'static>, StateEvent> {
-    match cfg!(test) {
-        true => Trans::Quit,
-        false => Trans::None,
+fn quit_during_tests<'a, 'b>() -> Trans<CustomGameData<'a, 'b>, GameStateEvent> {
+    if cfg!(test) {
+        Trans::Quit
+    } else {
+        Trans::None
     }
 }
 
@@ -169,43 +194,92 @@ pub struct ScoreBoard {
 
 impl ScoreBoard {
     pub const fn new() -> Self {
-        Self { score_left: 0, score_right: 0 }
+        Self {
+            score_left: 0,
+            score_right: 0,
+        }
     }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum TestEvent {
+    Quit,
+    Pop,
+    Panic,
+}
+
+#[derive(Debug, Derivative, EventReader)]
+#[derivative(Clone(bound = ""))]
+#[reader(GameStateEventReader)]
+pub enum GameStateEvent<T = StringBindings>
+where
+    T: BindingTypes,
+{
+    /// Events sent by the winit window.
+    Window(Event),
+    /// Events sent by the ui system.
+    Ui(UiEvent),
+    /// Events sent by the input system.
+    Input(InputEvent<T>),
+    Test(TestEvent),
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use amethyst::core::{ecs::Write, shrev::EventChannel};
-    use std::path::PathBuf;
+    use std::{panic, path::PathBuf};
 
-    pub struct SendMockEvents<M, T, E> {
-        mock_events: Box<dyn Fn(&mut World) -> M + Send + 'static>,
-        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<T, E>> + Send>,
+    pub struct SendMockEvents<MockEventT, CustomGameDataT, StateEventT>
+    where
+        MockEventT: Send + Sync + 'static,
+        StateEventT: Send + Sync + 'static,
+    {
+        mock_events: Vec<Box<dyn Fn(&mut World) -> MockEventT>>,
+        next_state: Box<dyn Fn(&mut World) -> Box<dyn State<CustomGameDataT, StateEventT>>>,
     }
 
-    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> SendMockEvents<M, T, E> {
-        pub fn new<Fsme, Fns>(next_state: Fns, mock_events: Fsme) -> Self
+    impl<MockEventT, CustomGameDataT, E> SendMockEvents<MockEventT, CustomGameDataT, E>
+    where
+        MockEventT: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+    {
+        pub fn test_state<FnT>(next_state: FnT) -> Self
         where
-            Fsme: Fn(&mut World) -> M + Send + 'static,
-            Fns: Fn(&mut World) -> Box<dyn State<T, E>> + Send + 'static,
+            FnT: Fn(&mut World) -> Box<dyn State<CustomGameDataT, E>> + Send + Sync + 'static,
         {
             Self {
-                mock_events: Box::new(mock_events),
+                mock_events: vec![],
                 next_state: Box::new(next_state),
             }
         }
+
+        pub fn with_event<FnT>(mut self, event: FnT) -> Self
+        where
+            FnT: Fn(&mut World) -> MockEventT + Send + Sync + 'static,
+        {
+            self.mock_events.push(Box::new(event));
+            self
+        }
     }
 
-    impl<M: Send + Sync + 'static, T, E: Send + Sync + 'static> State<T, E> for SendMockEvents<M, T, E> {
-        fn update(&mut self, data: StateData<'_, T>) -> Trans<T, E> {
-            {
-                let event = (self.mock_events)(data.world);
-                let mut events: (Write<EventChannel<M>>) = data.world.system_data();
-                events.single_write(event);
-            }
-
+    impl<MockEventT, CustomGameDataT, E> State<CustomGameDataT, E> for SendMockEvents<MockEventT, CustomGameDataT, E>
+    where
+        MockEventT: Send + Sync + 'static,
+        E: Send + Sync + 'static,
+    {
+        fn update(&mut self, data: StateData<'_, CustomGameDataT>) -> Trans<CustomGameDataT, E> {
             Trans::Switch((self.next_state)(data.world))
+        }
+
+        fn shadow_update(&mut self, data: StateData<'_, CustomGameDataT>) {
+            {
+                if let Some(mock_event) = self.mock_events.pop() {
+                    let event = (mock_event)(data.world);
+                    let mut events: Write<EventChannel<MockEventT>> = data.world.system_data();
+                    events.single_write(event);
+                }
+            }
         }
     }
 

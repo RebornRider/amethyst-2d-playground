@@ -8,7 +8,6 @@ use amethyst::{
     shrev::{EventChannel, ReaderId},
     ui::UiEvent,
 };
-
 /// This shows how to handle UI events. This is the same as in the 'ui' example.
 #[derive(SystemDesc)]
 #[system_desc(name(UiEventHandlerSystemDesc))]
@@ -29,7 +28,7 @@ impl<'a> System<'a> for UiEventHandlerSystem {
     fn run(&mut self, events: Self::SystemData) {
         // Reader id was just initialized above if empty
         for _ev in events.read(&mut self.reader_id) {
-            //log::info!("[SYSTEM] You just interacted with an ui element: {:?}", _ev);
+            // log::info!("[SYSTEM] You just interacted with an ui element: {:?}", _ev);
         }
     }
 }
@@ -47,12 +46,11 @@ mod tests {
         utils::fps_counter::FpsCounterBundle,
         window::ScreenDimensions,
     };
-    use amethyst_test::AmethystApplication;
 
     #[test]
     fn handle_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()

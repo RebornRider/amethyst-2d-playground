@@ -8,7 +8,6 @@ use amethyst::{
     ui::UiText,
     utils::fps_counter::FpsCounter,
 };
-
 /// This system is responsible for checking if a ball has moved into a left or
 /// a right edge. Points are distributed to the player on the other side, and
 /// the ball is reset.
@@ -28,7 +27,18 @@ impl<'s> System<'s> for WinnerSystem {
         Read<'s, FpsCounter>,
     );
 
-    fn run(&mut self, (mut balls, mut transforms, mut text, mut score_board, storage, sounds, score_text, audio_output, fps_counter): Self::SystemData) {
+    fn run(
+        &mut self,
+        (mut balls,
+            mut transforms,
+            mut text,
+            mut score_board,
+            storage,
+            sounds,
+            score_text,
+            audio_output,
+            fps_counter): Self::SystemData,
+    ) {
         if let Some(text) = text.get_mut(score_text.fps_display) {
             let fps = fps_counter.sampled_fps();
             text.text = format!("FPS: {:.*}", 2, fps);
@@ -87,6 +97,7 @@ pub struct ScoreText {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     use crate::{
         audio::initialise_audio,
         setup_loader_for_test,
@@ -104,13 +115,12 @@ mod tests {
         utils::fps_counter::FpsCounterBundle,
         window::ScreenDimensions,
     };
-    use amethyst_test::AmethystApplication;
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
     fn reset_ball_on_hitting_left_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
@@ -141,7 +151,14 @@ mod tests {
                 let sprite_sheet_handle = Some(load_sprite_sheet(world));
                 if let Some(root_entity) = root_entity {
                     if let Some(sprite_sheet) = sprite_sheet_handle {
-                        initialise_ball(world, root_entity, sprite_sheet, crate::BALL_RADIUS, [-10.0, 0.0], Some([0.0, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            crate::BALL_RADIUS,
+                            [-10.0, 0.0],
+                            Some([0.0, 0.0]),
+                        );
                     }
                 }
             })
@@ -163,7 +180,7 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_right_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_bundle(FpsCounterBundle::default())
             .with_ui_bundles::<StringBindings>()
@@ -194,7 +211,14 @@ mod tests {
                 let sprite_sheet_handle = Some(load_sprite_sheet(world));
                 if let Some(root_entity) = root_entity {
                     if let Some(sprite_sheet) = sprite_sheet_handle {
-                        initialise_ball(world, root_entity, sprite_sheet, crate::BALL_RADIUS, [10.0, 0.0], Some([crate::ARENA_WIDTH, 0.0]));
+                        initialise_ball(
+                            world,
+                            root_entity,
+                            sprite_sheet,
+                            crate::BALL_RADIUS,
+                            [10.0, 0.0],
+                            Some([crate::ARENA_WIDTH, 0.0]),
+                        );
                     }
                 }
             })

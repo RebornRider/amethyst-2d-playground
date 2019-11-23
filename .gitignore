@@ -19,3 +19,5 @@ thumbs.db
 
 # Thread profiler output
 thread_profile.json
+
+rust-toolchain

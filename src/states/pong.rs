@@ -1,7 +1,9 @@
+use crate::game_data::CustomGameData;
+
 use crate::{
     states::{delete_hierarchy, GameplayState, PauseMenuState},
     systems::ScoreText,
-    Ball, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
+    Ball, GameStateEvent, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
 };
 use amethyst::{
     assets::{AssetStorage, Handle, Loader},
@@ -26,8 +28,8 @@ pub struct Pong<'a, 'b> {
     ui_root: Option<Entity>,
 }
 
-impl<'a, 'b> SimpleState for Pong<'a, 'b> {
-    fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a, 'b> {
+    fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         *data.world.write_resource::<GameplayState>() = GameplayState::Running;
 
         self.initialize_gameplay_dispatcher(data.world);
@@ -37,7 +39,10 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
 
         // Initialize roots
         self.root_entity = Some(data.world.create_entity().with(Transform::default()).build());
-        self.ui_root = Some(data.world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
+        self.ui_root = Some(
+            data.world
+                .exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())),
+        );
 
         // Load the spritesheet necessary to render the graphics.
         // `spritesheet` is the layout of the sprites on the image;
@@ -54,7 +59,7 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
         }
     }
 
-    fn on_stop(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+    fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         if let Some(entity) = self.root_entity.take() {
             delete_hierarchy(entity, data.world).expect("Failed to remove Pong entities");
         }
@@ -71,17 +76,21 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
         self.ball_spawn_timer = None;
     }
 
-    fn on_pause(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+    fn on_pause(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         *data.world.write_resource::<GameplayState>() = GameplayState::Paused;
     }
 
-    fn on_resume(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+    fn on_resume(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         *data.world.write_resource::<GameplayState>() = GameplayState::Running;
     }
 
-    fn handle_event(&mut self, _: StateData<'_, GameData<'_, '_>>, event: StateEvent) -> SimpleTrans {
+    fn handle_event(
+        &mut self,
+        _: StateData<'_, CustomGameData<'_, '_>>,
+        event: GameStateEvent,
+    ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
         match event {
-            StateEvent::Window(event) => {
+            GameStateEvent::Window(event) => {
                 if is_close_requested(&event) {
                     log::info!("[Trans::Quit] Quitting Application!");
                     Trans::Quit
@@ -96,7 +105,11 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
         }
     }
 
-    fn update(&mut self, data: &mut StateData<'_, GameData<'_, '_>>) -> SimpleTrans {
+    fn update(
+        &mut self,
+        data: StateData<'_, CustomGameData<'_, '_>>,
+    ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
+        data.data.update(data.world, true);
         if let Some(dispatcher) = self.dispatcher.as_mut() {
             dispatcher.dispatch(data.world);
         }
@@ -117,7 +130,14 @@ impl<'a, 'b> SimpleState for Pong<'a, 'b> {
                     let sprite_sheet_clone = self.sprite_sheet_handle.clone();
                     if let Some(sprite_sheet) = sprite_sheet_clone {
                         use crate::{BALL_RADIUS, BALL_VELOCITY_X, BALL_VELOCITY_Y};
-                        initialise_ball(data.world, root_entity, sprite_sheet, BALL_RADIUS, [BALL_VELOCITY_X, BALL_VELOCITY_Y], None);
+                        initialise_ball(
+                            data.world,
+                            root_entity,
+                            sprite_sheet,
+                            BALL_RADIUS,
+                            [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+                            None,
+                        );
                         #[cfg(test)]
                         return Trans::Quit;
                     }
@@ -139,7 +159,9 @@ impl<'a, 'b> Pong<'a, 'b> {
             use amethyst::core::bundle::SystemBundle;
 
             let mut dispatcher_builder = DispatcherBuilder::new();
-            PongBundle::default().build(world, &mut dispatcher_builder).expect("couldn't add pong bundle to dispatcher");
+            PongBundle::default()
+                .build(world, &mut dispatcher_builder)
+                .expect("couldn't add pong bundle to dispatcher");
 
             // Build and setup the `Dispatcher`.
             let mut dispatcher = dispatcher_builder.build();
@@ -158,7 +180,12 @@ pub fn load_sprite_sheet(world: &mut World) -> Handle<SpriteSheet> {
     let texture_handle = {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load("texture/pong_spritesheet.png", ImageFormat::default(), (), &texture_storage)
+        loader.load(
+            "texture/pong_spritesheet.png",
+            ImageFormat::default(),
+            (),
+            &texture_storage,
+        )
     };
 
     let loader = world.read_resource::<Loader>();
@@ -233,7 +260,14 @@ pub fn initialise_paddles(world: &mut World, parent: Entity, sprite_sheet_handle
 }
 
 /// Initialises one ball in the middle-ish of the arena.
-pub fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: Handle<SpriteSheet>, radius: f32, velocity: [f32; 2], position: Option<[f32; 2]>) {
+pub fn initialise_ball(
+    world: &mut World,
+    parent: Entity,
+    sprite_sheet_handle: Handle<SpriteSheet>,
+    radius: f32,
+    velocity: [f32; 2],
+    position: Option<[f32; 2]>,
+) {
     // Create the translation.
     let mut local_transform = Transform::default();
     let initial_position = position.unwrap_or_else(|| [ARENA_WIDTH / 2.0, ARENA_HEIGHT / 2.0]);
@@ -255,12 +289,41 @@ pub fn initialise_ball(world: &mut World, parent: Entity, sprite_sheet_handle: H
 }
 
 pub fn initialise_score(world: &mut World, parent: Entity) {
-    let font = world.read_resource::<Loader>().load("font/square.ttf", TtfFormat, (), &world.read_resource());
-    let p1_transform = UiTransform::new("P1".to_string(), Anchor::TopMiddle, Anchor::Middle, -50., -50., 1., 200., 50.);
+    let font = world
+        .read_resource::<Loader>()
+        .load("font/square.ttf", TtfFormat, (), &world.read_resource());
+    let p1_transform = UiTransform::new(
+        "P1".to_string(),
+        Anchor::TopMiddle,
+        Anchor::Middle,
+        -50.,
+        -50.,
+        1.,
+        200.,
+        50.,
+    );
 
-    let p2_transform = UiTransform::new("P2".to_string(), Anchor::TopMiddle, Anchor::Middle, 50., -50., 1., 200., 50.);
+    let p2_transform = UiTransform::new(
+        "P2".to_string(),
+        Anchor::TopMiddle,
+        Anchor::Middle,
+        50.,
+        -50.,
+        1.,
+        200.,
+        50.,
+    );
 
-    let fps_text_transform = UiTransform::new("FPS".to_string(), Anchor::TopLeft, Anchor::TopLeft, 0., 0., 1., 200., 50.);
+    let fps_text_transform = UiTransform::new(
+        "FPS".to_string(),
+        Anchor::TopLeft,
+        Anchor::TopLeft,
+        0.,
+        0.,
+        1.,
+        200.,
+        50.,
+    );
 
     let p1_score = world
         .create_entity()
@@ -282,26 +345,32 @@ pub fn initialise_score(world: &mut World, parent: Entity) {
         .with(UiText::new(font, "0".to_string(), [1.0, 1.0, 1.0, 1.0], 24.))
         .with(Parent { entity: parent })
         .build();
-    world.insert(ScoreText { p1_score, p2_score, fps_display });
+    world.insert(ScoreText {
+        p1_score,
+        p2_score,
+        fps_display,
+    });
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{audio::initialise_audio, setup_loader_for_test};
+    use crate::{audio::initialise_audio, setup_loader_for_test, tests::SendMockEvents};
     use amethyst::{
         assets::AssetStorage,
         audio::Source,
         core::{Parent, TransformBundle},
         input::StringBindings,
         renderer::{SpriteRender, SpriteSheet, Texture},
+        ui::{UiEvent, UiEventType},
         window::ScreenDimensions,
+        winit,
+        winit::*,
     };
-    use amethyst_test::AmethystApplication;
 
     #[test]
-    fn test_pong_state() {
+    fn pong_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::blank()
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<StringBindings>()
             .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
@@ -321,6 +390,146 @@ mod tests {
                 world.register::<Camera>();
             })
             .with_state(Pong::default)
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::CloseRequested,
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::KeyboardInput {
+                            device_id: DeviceId::dummy(),
+                            input: KeyboardInput {
+                                scancode: 0,
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                modifiers: winit::ModifiersState::default(),
+                            },
+                        },
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
+                    Event::WindowEvent {
+                        window_id: WindowId::dummy(),
+                        event: WindowEvent::HoveredFileCancelled,
+                    }
+                })
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::blank()
+            .with_bundle(TransformBundle::new())
+            .with_ui_bundles::<StringBindings>()
+            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+            .with_setup(|world| {
+                setup_loader_for_test(world);
+                world.insert(GameplayState::Paused);
+                world.insert(AssetStorage::<Source>::default());
+                initialise_audio(world);
+
+                world.insert(AssetStorage::<Texture>::default());
+                world.insert(AssetStorage::<SpriteSheet>::default());
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
+            })
             .run();
         assert!(test_result.is_ok());
     }
