@@ -3,7 +3,12 @@ status = [
     ".github/workflows/on_submit.yml",
     "codecov/patch",
     "codecov/project",
-    "continuous-integration/travis-ci/push",
+    "coverage-tarpaulin",
+    "clippy",
+    "Travis CI - Branch",
+    "Travis CI - Pull Request",
+    "Check on Windows",
+    "Check on Ubuntu",
 ]
 
 # Do not allow pull requests with these labels to be merged.
