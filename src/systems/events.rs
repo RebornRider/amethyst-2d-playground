@@ -38,13 +38,9 @@ mod tests {
     use super::*;
 
     use amethyst::{
-        core::TransformBundle,
         ecs::prelude::WorldExt,
-        input::StringBindings,
         prelude::Builder,
         ui::{UiEvent, UiEventType},
-        utils::fps_counter::FpsCounterBundle,
-        window::ScreenDimensions,
     };
 
     #[test]

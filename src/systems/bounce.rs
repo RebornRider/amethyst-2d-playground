@@ -261,18 +261,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                let tex_storage = AssetStorage::<Texture>::default();
-                let ss_storage = AssetStorage::<SpriteSheet>::default();
-                world.insert(tex_storage);
-                world.insert(ss_storage);
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
 
                 // Initialize paddles and ball
                 let root_entity = Some(world.create_entity().with(Transform::default()).build());

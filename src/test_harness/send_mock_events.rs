@@ -1,7 +1,4 @@
-use amethyst::core::shrev::EventChannel;
-use amethyst::ecs::prelude::*;
-use amethyst::prelude::World;
-use amethyst::{State, StateData, Trans};
+use amethyst::{core::shrev::EventChannel, ecs::prelude::*, prelude::World, State, StateData, Trans};
 
 pub struct SendMockEvents<MockEventT, CustomGameDataT, StateEventT>
 where

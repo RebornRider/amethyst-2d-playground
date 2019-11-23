@@ -2,20 +2,21 @@ use std::{any::Any, marker::PhantomData, panic, sync::Mutex};
 
 use crate::{
     game_data::{CustomGameData, CustomGameDataBuilder},
-    initialize_app_root, GameStateEvent, GameStateEventReader,
+    initialize_app_root,
+    states::GameplayState,
+    Ball, GameStateEvent, GameStateEventReader, Paddle,
 };
 use amethyst::{
-    assets::AssetStorage,
-    assets::HotReloadBundle,
+    assets::{AssetStorage, HotReloadBundle},
     audio::Source,
-    core::{transform::TransformBundle, RunNowDesc, SystemBundle, SystemDesc},
+    core::{transform::*, RunNowDesc, SystemBundle, SystemDesc},
     ecs::prelude::*,
     error::Error,
     input::{BindingTypes, InputBundle, StringBindings},
     prelude::*,
-    renderer::{SpriteSheet, Texture},
+    renderer::{Camera, SpriteRender, SpriteSheet, Texture},
     shred::Resource,
-    ui::UiBundle,
+    ui::{FontAsset, UiBundle, UiText, UiTransform},
     utils::fps_counter::FpsCounterBundle,
     window::ScreenDimensions,
 };
@@ -145,11 +146,6 @@ lazy_static! {
 /// Builder for an Amethyst application.
 ///
 /// This provides varying levels of setup so that users do not have to register common bundles.
-///
-/// # Type Parameters
-///
-/// * `T`: Game data type that holds the common dispatcher.
-/// * `E`: Custom event type shared between states.
 #[derive(Derivative, Default)]
 #[derivative(Debug)]
 pub struct IntegrationTestApplication {
@@ -203,6 +199,18 @@ impl IntegrationTestApplication {
             .with_resource(AssetStorage::<Source>::default())
             .with_resource(AssetStorage::<Texture>::default())
             .with_resource(AssetStorage::<SpriteSheet>::default())
+            .with_resource(AssetStorage::<FontAsset>::default())
+            .with_resource(GameplayState::Paused)
+            .with_setup(|world| {
+                world.register::<Transform>();
+                world.register::<Parent>();
+                world.register::<SpriteRender>();
+                world.register::<Paddle>();
+                world.register::<Ball>();
+                world.register::<Camera>();
+                world.register::<UiTransform>();
+                world.register::<UiText>();
+            })
     }
 
     /// Returns an application with the Transform, Input, and UI bundles.
@@ -324,6 +332,7 @@ impl IntegrationTestApplication {
         self.run()
     }
 
+    #[allow(clippy::needless_pass_by_value)]
     fn box_any_to_error(error: Box<dyn Any + Send>) -> Error {
         // Caught `panic!`s are generally `&str`s.
         //

@@ -354,16 +354,9 @@ pub fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::audio::initialise_audio;
-    use crate::test_harness::SendMockEvents;
+    use crate::{audio::initialise_audio, test_harness::SendMockEvents};
     use amethyst::{
-        assets::AssetStorage,
-        audio::Source,
-        core::{Parent, TransformBundle},
-        input::StringBindings,
-        renderer::{SpriteRender, SpriteSheet, Texture},
         ui::{UiEvent, UiEventType},
-        window::ScreenDimensions,
         winit,
         winit::*,
     };
@@ -373,18 +366,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(GameplayState::Paused);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
-                world.register::<Camera>();
             })
             .with_state(Pong::default)
             .run();
@@ -396,18 +378,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(GameplayState::Paused);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
-                world.register::<Camera>();
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -426,18 +397,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(GameplayState::Paused);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
-                world.register::<Camera>();
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -464,18 +424,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(GameplayState::Paused);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
-                world.register::<Camera>();
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -494,18 +443,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(GameplayState::Paused);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
-                world.register::<Camera>();
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default()))

@@ -2,8 +2,7 @@ mod integration_test_application;
 mod send_mock_events;
 
 pub use self::{integration_test_application::IntegrationTestApplication, send_mock_events::SendMockEvents};
-use crate::game_data::CustomGameData;
-use crate::GameStateEvent;
+use crate::{game_data::CustomGameData, GameStateEvent};
 
 use amethyst::Trans;
 

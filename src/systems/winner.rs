@@ -103,17 +103,7 @@ mod tests {
         states::{initialise_ball, initialise_score, load_sprite_sheet},
         ScoreBoard,
     };
-    use amethyst::{
-        assets::AssetStorage,
-        core::{Parent, TransformBundle},
-        ecs::prelude::WorldExt,
-        input::StringBindings,
-        prelude::Builder,
-        renderer::{SpriteRender, SpriteSheet, Texture},
-        ui::{FontAsset, UiCreator, UiTransform},
-        utils::fps_counter::FpsCounterBundle,
-        window::ScreenDimensions,
-    };
+    use amethyst::{ecs::prelude::WorldExt, prelude::Builder, ui::UiCreator};
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
@@ -121,18 +111,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.insert(AssetStorage::<FontAsset>::default());
-                world.register::<Transform>();
-                world.register::<UiTransform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Ball>();
-                world.register::<UiText>();
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
@@ -176,18 +155,7 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.insert(AssetStorage::<FontAsset>::default());
-                world.register::<Transform>();
-                world.register::<UiTransform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Ball>();
-                world.register::<UiText>();
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));

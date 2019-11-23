@@ -60,7 +60,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
                     && self
                         .load_progress
                         .as_ref()
-                        .map_or(Completion::Complete, |progress| progress.complete())
+                        .map_or(Completion::Complete, ProgressCounter::complete)
                         != Completion::Loading
                 {
                     log::info!("[Trans::Switch] Switching to MainMenu!");
@@ -204,9 +204,6 @@ mod tests {
     fn unhandled_input_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
-            .with_setup(|world| {
-                world.insert(AssetStorage::<Source>::default());
-            })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(WelcomeScreen::default())).with_event(|_world| {
                     InputEvent::<StringBindings>::CursorMoved {
