@@ -100,45 +100,18 @@ mod tests {
 
     use crate::{
         audio::initialise_audio,
-        setup_loader_for_test,
         states::{initialise_ball, initialise_score, load_sprite_sheet},
         ScoreBoard,
     };
-    use amethyst::{
-        assets::AssetStorage,
-        core::{Parent, TransformBundle},
-        ecs::prelude::WorldExt,
-        input::StringBindings,
-        prelude::Builder,
-        renderer::{SpriteRender, SpriteSheet, Texture},
-        ui::{FontAsset, UiCreator, UiTransform},
-        utils::fps_counter::FpsCounterBundle,
-        window::ScreenDimensions,
-    };
+    use amethyst::{ecs::prelude::WorldExt, prelude::Builder, ui::UiCreator};
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
     fn reset_ball_on_hitting_left_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_bundle(FpsCounterBundle::default())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.insert(AssetStorage::<FontAsset>::default());
-                world.register::<Transform>();
-                world.register::<UiTransform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Ball>();
-                world.register::<UiText>();
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
@@ -180,25 +153,9 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_right_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_bundle(FpsCounterBundle::default())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
-                world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
-
-                world.insert(AssetStorage::<Texture>::default());
-                world.insert(AssetStorage::<SpriteSheet>::default());
-                world.insert(AssetStorage::<FontAsset>::default());
-                world.register::<Transform>();
-                world.register::<UiTransform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Ball>();
-                world.register::<UiText>();
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
