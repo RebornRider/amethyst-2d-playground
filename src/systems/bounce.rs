@@ -83,12 +83,11 @@ mod tests {
 
     use crate::{
         audio::initialise_audio,
-        setup_loader_for_test,
         states::{initialise_ball, initialise_paddles, load_sprite_sheet},
     };
     use amethyst::{
         assets::AssetStorage,
-        core::{Parent, TransformBundle},
+        core::Parent,
         ecs::prelude::WorldExt,
         prelude::Builder,
         renderer::{SpriteRender, SpriteSheet, Texture},
@@ -113,10 +112,8 @@ mod tests {
     #[test]
     fn basic_bounce_system_setup() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 
@@ -158,10 +155,8 @@ mod tests {
     #[test]
     fn paddle_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 
@@ -212,10 +207,8 @@ mod tests {
     #[test]
     fn no_paddle_reflect_if_going_into_direction_of_paddle() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 
@@ -266,10 +259,8 @@ mod tests {
     #[test]
     fn bottom_reflect() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 

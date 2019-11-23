@@ -354,7 +354,8 @@ pub fn initialise_score(world: &mut World, parent: Entity) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{audio::initialise_audio, setup_loader_for_test, tests::SendMockEvents};
+    use crate::audio::initialise_audio;
+    use crate::test_harness::SendMockEvents;
     use amethyst::{
         assets::AssetStorage,
         audio::Source,
@@ -370,12 +371,8 @@ mod tests {
     #[test]
     fn pong_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
@@ -397,12 +394,8 @@ mod tests {
     #[test]
     fn is_close_requested() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
@@ -431,12 +424,8 @@ mod tests {
     #[test]
     fn escape_key() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
@@ -473,12 +462,8 @@ mod tests {
     #[test]
     fn unhandled_window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
@@ -507,12 +492,8 @@ mod tests {
     #[test]
     fn unhandled_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(GameplayState::Paused);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);

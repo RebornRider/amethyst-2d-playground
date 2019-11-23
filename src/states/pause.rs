@@ -123,15 +123,11 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::setup_loader_for_test;
 
     #[test]
     fn test_pause_menu_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_setup(|world| {
-                setup_loader_for_test(world);
-            })
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_state(PauseMenuState::default)
             .run();
         assert!(test_result.is_ok());

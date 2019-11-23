@@ -100,7 +100,6 @@ mod tests {
 
     use crate::{
         audio::initialise_audio,
-        setup_loader_for_test,
         states::{initialise_ball, initialise_score, load_sprite_sheet},
         ScoreBoard,
     };
@@ -120,13 +119,8 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_left_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_bundle(FpsCounterBundle::default())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 
@@ -180,13 +174,8 @@ mod tests {
     #[test]
     fn reset_ball_on_hitting_right_side() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_bundle(FpsCounterBundle::default())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
                 initialise_audio(world);
 

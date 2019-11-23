@@ -36,7 +36,7 @@ impl<'a> System<'a> for UiEventHandlerSystem {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::setup_loader_for_test;
+
     use amethyst::{
         core::TransformBundle,
         ecs::prelude::WorldExt,
@@ -50,14 +50,8 @@ mod tests {
     #[test]
     fn handle_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_bundle(FpsCounterBundle::default())
-            .with_ui_bundles::<StringBindings>()
-            .with_resource(ScreenDimensions::new(1920, 1080, 1.0))
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
-
                 let entity = world.create_entity().build();
 
                 let mut events = world.fetch_mut::<EventChannel<UiEvent>>();

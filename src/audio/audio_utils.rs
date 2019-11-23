@@ -71,7 +71,8 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{setup_loader_for_test, GameStateEvent, GameStateEventReader};
+
+    use crate::{GameStateEvent, GameStateEventReader};
     use amethyst::core::transform::TransformBundle;
     use amethyst_test::AmethystApplication;
 
@@ -83,7 +84,6 @@ mod tests {
         )
         .with_bundle(TransformBundle::new())
         .with_setup(|world| {
-            setup_loader_for_test(world);
             world.insert(AssetStorage::<Source>::default());
             initialise_audio(world);
         })

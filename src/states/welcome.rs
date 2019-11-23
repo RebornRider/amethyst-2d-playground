@@ -86,11 +86,10 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
 mod tests {
     use super::*;
 
-    use crate::{setup_loader_for_test, tests::SendMockEvents};
+    use crate::test_harness::SendMockEvents;
     use amethyst::{
         assets::AssetStorage,
         audio::Source,
-        core::transform::TransformBundle,
         input::{InputEvent, StringBindings},
         ui::{UiEvent, UiEventType},
         winit,
@@ -100,10 +99,8 @@ mod tests {
     #[test]
     fn left_mouse_button() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
@@ -126,10 +123,8 @@ mod tests {
     #[test]
     fn unhandled_window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
@@ -147,10 +142,8 @@ mod tests {
     #[test]
     fn escape_key() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
@@ -176,10 +169,8 @@ mod tests {
     #[test]
     fn window_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
@@ -197,10 +188,8 @@ mod tests {
     #[test]
     fn unhandled_ui_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {
@@ -214,10 +203,8 @@ mod tests {
     #[test]
     fn unhandled_input_event() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                setup_loader_for_test(world);
                 world.insert(AssetStorage::<Source>::default());
             })
             .with_state(|| {

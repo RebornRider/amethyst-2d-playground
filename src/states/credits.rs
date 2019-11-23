@@ -68,17 +68,11 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::setup_loader_for_test;
-    use amethyst::core::transform::TransformBundle;
 
     #[test]
     fn test_credits_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
-            .with_setup(|world| {
-                setup_loader_for_test(world);
-            })
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_state(CreditsScreen::default)
             .run();
         assert!(test_result.is_ok());

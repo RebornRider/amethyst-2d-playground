@@ -1,19 +1,22 @@
-use std::{any::Any, marker::PhantomData, panic, path::PathBuf, sync::Mutex};
+use std::{any::Any, marker::PhantomData, panic, sync::Mutex};
 
 use crate::{
     game_data::{CustomGameData, CustomGameDataBuilder},
-    GameStateEvent, GameStateEventReader,
+    initialize_app_root, GameStateEvent, GameStateEventReader,
 };
 use amethyst::{
-    self,
+    assets::AssetStorage,
+    assets::HotReloadBundle,
+    audio::Source,
     core::{transform::TransformBundle, RunNowDesc, SystemBundle, SystemDesc},
     ecs::prelude::*,
     error::Error,
-    input::{BindingTypes, InputBundle},
+    input::{BindingTypes, InputBundle, StringBindings},
     prelude::*,
+    renderer::{SpriteSheet, Texture},
     shred::Resource,
     ui::UiBundle,
-    utils::application_root_dir,
+    utils::fps_counter::FpsCounterBundle,
     window::ScreenDimensions,
 };
 use amethyst_test::{CustomDispatcherStateBuilder, FunctionState, SequencerState};
@@ -187,6 +190,21 @@ impl IntegrationTestApplication {
         }
     }
 
+    /// Returns an application with the base systems to tes hte pong game
+    #[allow(dead_code)]
+    pub fn pong_base() -> Self {
+        Self::blank()
+            .with_bundle(TransformBundle::new())
+            .with_bundle(HotReloadBundle::default())
+            .with_bundle(InputBundle::<StringBindings>::new())
+            .with_bundle(FpsCounterBundle::default())
+            .with_bundle(UiBundle::<StringBindings>::new())
+            .with_resource(ScreenDimensions::new(1920, 1280, 1.0))
+            .with_resource(AssetStorage::<Source>::default())
+            .with_resource(AssetStorage::<Texture>::default())
+            .with_resource(AssetStorage::<SpriteSheet>::default())
+    }
+
     /// Returns an application with the Transform, Input, and UI bundles.
     ///
     /// This also adds a `ScreenDimensions` resource to the `World` so that UI calculations can be
@@ -197,11 +215,6 @@ impl IntegrationTestApplication {
             .with_bundle(TransformBundle::new())
             .with_ui_bundles::<B>()
             .with_resource(ScreenDimensions::new(1920, 1280, 1.0))
-    }
-
-    /// Returns a `PathBuf` to `<crate_dir>/assets`.
-    pub fn assets_dir() -> Result<PathBuf, Error> {
-        Ok(application_root_dir()?.join("assets"))
     }
 
     /// Returns the built Application.
@@ -258,7 +271,7 @@ impl IntegrationTestApplication {
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        let assets_dir = Self::assets_dir().expect("Failed to get default assets dir.");
+        let assets_dir = initialize_app_root().expect("Failed to get default assets dir.");
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
         {
             let world = &mut application_builder.world;
@@ -979,6 +992,7 @@ mod test {
         };
 
         use super::IntegrationTestApplication;
+        use amethyst::prelude::WorldExt;
 
         #[test]
         fn audio_zero() -> Result<(), Error> {

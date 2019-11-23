@@ -23,16 +23,12 @@ pub fn delete_hierarchy(root: Entity, world: &mut World) -> Result<(), WrongGene
 mod tests {
     use super::*;
 
-    use amethyst::{
-        core::{transform::TransformBundle, Parent},
-        prelude::Builder,
-    };
+    use amethyst::{core::Parent, prelude::Builder};
 
     #[test]
     fn test_delete_single_entity() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_assertion(|world| {
                 let entity = world.create_entity().build();
                 assert!(world.is_alive(entity));
@@ -49,8 +45,7 @@ mod tests {
     #[test]
     fn test_delete_two_unrelated_entities() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_assertion(|world| {
                 let entity1 = world.create_entity().build();
                 assert!(world.is_alive(entity1));
@@ -71,8 +66,7 @@ mod tests {
     #[test]
     fn test_delete_two_related_entities_deleting_child() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = crate::test_harness::IntegrationTestApplication::blank()
-            .with_bundle(TransformBundle::new())
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_assertion(|world| {
                 let parent = world.create_entity().build();
                 assert!(world.is_alive(parent));

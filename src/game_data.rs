@@ -39,7 +39,7 @@ impl<'a, 'b> CustomGameData<'a, 'b> {
 }
 
 // Implement for built-in Amethyst `GameData`
-impl<'a, 'b> GameUpdate for CustomGameData<'a, 'b> {
+impl GameUpdate for CustomGameData<'_, '_> {
     fn update(&mut self, world: &World) {
         CustomGameData::update(self, world, true);
     }
@@ -56,7 +56,7 @@ pub struct CustomGameDataBuilder<'a, 'b> {
     running_dispatcher_operations: Vec<Box<dyn DispatcherOperation<'a, 'b>>>,
 }
 
-impl<'a, 'b> Default for CustomGameDataBuilder<'a, 'b> {
+impl Default for CustomGameDataBuilder<'_, '_> {
     fn default() -> Self {
         CustomGameDataBuilder::new()
     }
