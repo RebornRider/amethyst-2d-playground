@@ -1,6 +1,7 @@
 #[cfg(not(test))]
 use crate::audio::set_sink_volume;
 use crate::{audio::initialise_audio, game_data::CustomGameData};
+use derivative::Derivative;
 
 use crate::{
     quit_during_tests,
@@ -8,25 +9,30 @@ use crate::{
     GameStateEvent,
 };
 use amethyst::{
-    ecs::prelude::Entity,
+    assets::{Completion, ProgressCounter},
+    ecs::prelude::*,
     input::{is_close_requested, is_key_down, is_mouse_button_down},
     prelude::*,
     ui::UiCreator,
     winit::{MouseButton, VirtualKeyCode},
 };
 
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct WelcomeScreen {
     ui_handle: Option<Entity>,
+    load_progress: Option<ProgressCounter>,
 }
 
 impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for WelcomeScreen {
     fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         data.world.insert(GameplayState::Paused);
+
+        let mut progress = ProgressCounter::default();
         self.ui_handle = Some(
             data.world
-                .exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", ())),
+                .exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", &mut progress)),
         );
+        self.load_progress = Some(progress);
 
         initialise_audio(data.world);
         #[cfg(not(test))]
@@ -51,7 +57,13 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
                 if is_close_requested(event) || is_key_down(event, VirtualKeyCode::Escape) {
                     log::info!("[Trans::Quit] Quitting Application!");
                     Trans::Quit
-                } else if is_mouse_button_down(event, MouseButton::Left) {
+                } else if is_mouse_button_down(event, MouseButton::Left)
+                    && self
+                        .load_progress
+                        .as_ref()
+                        .map_or(Completion::Complete, |progress| progress.complete())
+                        != Completion::Loading
+                {
                     log::info!("[Trans::Switch] Switching to MainMenu!");
                     Trans::Switch(Box::new(crate::states::MainMenu::default()))
                 } else {
