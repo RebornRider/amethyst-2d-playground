@@ -1,5 +1,6 @@
 #  Amethyst 2D Playground
-[![Build Status](https://travis-ci.org/RebornRider/amethyst-2d-playground.svg?branch=master)](https://travis-ci.org/RebornRider/amethyst-2d-playground)
+[![Build Status](https://img.shields.io/travis/RebornRider/amethyst-2d-playground/master.svg?label=Linux|OSX|WindowsGNU)](https://travis-ci.org/RebornRider/amethyst-2d-playground)
+[![Build status](https://img.shields.io/appveyor/ci/RebornRider/amethyst-2d-playground/master.svg?label=WindowsMSVC)](https://ci.appveyor.com/project/RebornRider/amethyst-2d-playground/)
 [![Actions Status](https://github.com/RebornRider/amethyst-2d-playground/workflows/.github/workflows/on_submit.yml/badge.svg?branch=master)](https://github.com/RebornRider/amethyst-2d-playground/actions)
 [![codecov](https://codecov.io/gh/RebornRider/amethyst-2d-playground/branch/master/graph/badge.svg)](https://codecov.io/gh/RebornRider/amethyst-2d-playground)
 [![Security Audit](https://github.com/RebornRider/amethyst-2d-playground/workflows/.github/workflows/security_audit.yml/badge.svg?branch=master)](https://github.com/RebornRider/amethyst-2d-playground/actions)
