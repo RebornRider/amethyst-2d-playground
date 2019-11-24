@@ -31,9 +31,9 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
             data.world
                 .exec(|mut creator: UiCreator<'_>| creator.create("ui/welcome.ron", &mut progress)),
         );
+        initialise_audio(data.world, &mut progress);
         self.load_progress = Some(progress);
 
-        initialise_audio(data.world);
         #[cfg(not(test))]
         set_sink_volume(data.world, 0.2);
     }

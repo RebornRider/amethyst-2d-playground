@@ -356,6 +356,7 @@ mod tests {
     use super::*;
     use crate::{audio::initialise_audio, test_harness::SendMockEvents};
     use amethyst::{
+        assets::ProgressCounter,
         ui::{UiEvent, UiEventType},
         winit,
         winit::*,
@@ -366,7 +367,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
             })
             .with_state(Pong::default)
             .run();
@@ -378,7 +380,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -397,7 +400,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -424,7 +428,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
@@ -443,7 +448,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default()))

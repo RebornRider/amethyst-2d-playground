@@ -103,7 +103,7 @@ mod tests {
         states::{initialise_ball, initialise_score, load_sprite_sheet},
         ScoreBoard,
     };
-    use amethyst::{ecs::prelude::WorldExt, prelude::Builder, ui::UiCreator};
+    use amethyst::{assets::ProgressCounter, ecs::prelude::WorldExt, prelude::Builder, ui::UiCreator};
     use assert_approx_eq::assert_approx_eq;
 
     #[test]
@@ -111,7 +111,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));
@@ -155,7 +156,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
                 world.insert(ScoreBoard::new());
 
                 let ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())));

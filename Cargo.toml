@@ -23,6 +23,7 @@ derivative = { version = "1" }
 derive-new = { version = "0" }
 derive_deref = { version = "1" }
 lazy_static = { version = "1" }
+sentry = { version = "0" }
 
 [features]
 default = ["vulkan"]

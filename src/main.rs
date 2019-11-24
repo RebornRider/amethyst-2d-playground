@@ -32,6 +32,7 @@ use amethyst::{
 use derivative::Derivative;
 extern crate dunce;
 use crate::game_data::{CustomGameData, CustomGameDataBuilder};
+use sentry::integrations::panic::register_panic_handler;
 use std::{path, time::Duration};
 
 const ARENA_HEIGHT: f32 = 90.0;
@@ -53,6 +54,12 @@ const AUDIO_SCORE: &str = "audio/score.ogg";
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(amethyst::LoggerConfig::default());
+
+    let sentry = sentry::init(sentry::ClientOptions::default());
+    if sentry.is_enabled() {
+        register_panic_handler();
+    }
+
     let mut game = build_game()?;
     game.run();
     Ok(())
