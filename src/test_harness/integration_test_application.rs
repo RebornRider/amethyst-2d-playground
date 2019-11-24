@@ -2,7 +2,7 @@ use std::{any::Any, marker::PhantomData, panic, sync::Mutex};
 
 use crate::{
     game_data::{CustomGameData, CustomGameDataBuilder},
-    initialize_app_root,
+    initialize_paths,
     states::GameplayState,
     Ball, GameStateEvent, GameStateEventReader, Paddle,
 };
@@ -279,7 +279,7 @@ impl IntegrationTestApplication {
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        let assets_dir = initialize_app_root().expect("Failed to get default assets dir.");
+        let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
         {
             let world = &mut application_builder.world;
