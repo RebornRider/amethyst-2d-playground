@@ -1,12 +1,20 @@
-use amethyst::{core::shrev::EventChannel, ecs::prelude::*, prelude::World, State, StateData, Trans};
+use amethyst::{
+    core::shrev::EventChannel, core::timing::Time, ecs::prelude::*, prelude::World, State, StateData, Trans,
+};
+
+enum MockEventStep<MockEventT> {
+    EventStep(Box<dyn Fn(&mut World) -> MockEventT>),
+    WaitStep(f32),
+}
 
 pub struct SendMockEvents<MockEventT, CustomGameDataT, StateEventT>
 where
     MockEventT: Send + Sync + 'static,
     StateEventT: Send + Sync + 'static,
 {
-    mock_events: Vec<Box<dyn Fn(&mut World) -> MockEventT>>,
+    mock_events: Vec<MockEventStep<MockEventT>>,
     next_state: Box<dyn Fn(&mut World) -> Box<dyn State<CustomGameDataT, StateEventT>>>,
+    next_step_timer: Option<f32>,
 }
 
 impl<MockEventT, CustomGameDataT, E> SendMockEvents<MockEventT, CustomGameDataT, E>
@@ -21,6 +29,7 @@ where
         Self {
             mock_events: vec![],
             next_state: Box::new(next_state),
+            next_step_timer: None,
         }
     }
 
@@ -28,7 +37,14 @@ where
     where
         FnT: Fn(&mut World) -> MockEventT + Send + Sync + 'static,
     {
-        self.mock_events.push(Box::new(event));
+        self.mock_events.push(MockEventStep::EventStep(Box::new(event)));
+        self
+    }
+
+    pub fn with_wait(mut self, wait_time: f32) -> Self {
+        if wait_time >= 0.0 {
+            self.mock_events.push(MockEventStep::WaitStep(wait_time));
+        }
         self
     }
 }
@@ -43,11 +59,24 @@ where
     }
 
     fn shadow_update(&mut self, data: StateData<'_, CustomGameDataT>) {
-        {
+        if let Some(mut timer) = self.next_step_timer.take() {
+            let time = data.world.fetch::<Time>();
+            timer -= time.delta_seconds();
+            self.next_step_timer = Some(timer);
+        }
+
+        if self.next_step_timer.unwrap_or(0.0) <= 0.0 {
             if let Some(mock_event) = self.mock_events.pop() {
-                let event = (mock_event)(data.world);
-                let mut events: Write<EventChannel<MockEventT>> = data.world.system_data();
-                events.single_write(event);
+                match mock_event {
+                    MockEventStep::EventStep(step) => {
+                        let event = (step)(data.world);
+                        let mut events: Write<EventChannel<MockEventT>> = data.world.system_data();
+                        events.single_write(event);
+                    }
+                    MockEventStep::WaitStep(wait_time) => {
+                        self.next_step_timer.replace(wait_time);
+                    }
+                }
             }
         }
     }
