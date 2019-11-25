@@ -1,6 +1,5 @@
 use crate::{
     game_data::CustomGameData,
-    quit_during_tests,
     states::{util::delete_hierarchy, MainMenu},
     GameStateEvent,
 };
@@ -62,19 +61,24 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
         data.data.update(data.world, true);
-        quit_during_tests()
+        Trans::None
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_harness::SendMockEvents;
 
     #[test]
     fn test_credits_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
-            .with_state(CreditsScreen::default)
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(CreditsScreen::default()))
+                    .with_wait(1.0)
+                    .end_test()
+            })
             .run();
         assert!(test_result.is_ok());
     }

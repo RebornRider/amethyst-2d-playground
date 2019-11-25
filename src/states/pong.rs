@@ -373,7 +373,11 @@ mod tests {
                 let mut progress = ProgressCounter::default();
                 initialise_audio(world, &mut progress);
             })
-            .with_state(Pong::default)
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_wait(1.0)
+                    .end_test()
+            })
             .run();
         assert!(test_result.is_ok());
     }

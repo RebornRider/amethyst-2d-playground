@@ -1,4 +1,4 @@
-use crate::{game_data::CustomGameData, quit_during_tests, states::MainMenu, GameStateEvent};
+use crate::{game_data::CustomGameData, states::MainMenu, GameStateEvent};
 use amethyst::{
     ecs::Entity,
     input::{is_close_requested, is_key_down},
@@ -117,19 +117,24 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
             });
         }
 
-        quit_during_tests()
+        Trans::None
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_harness::SendMockEvents;
 
     #[test]
     fn test_pause_menu_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
-            .with_state(PauseMenuState::default)
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_wait(1.0)
+                    .end_test()
+            })
             .run();
         assert!(test_result.is_ok());
     }

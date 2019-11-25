@@ -72,27 +72,21 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 mod tests {
     use super::*;
 
-    use crate::{GameStateEvent, GameStateEventReader};
-    use amethyst::core::transform::TransformBundle;
-    use amethyst_test::AmethystApplication;
+    use crate::test_harness::IntegrationTestApplication;
 
     #[test]
     fn test_initialise_audio() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-            AmethystApplication::blank(),
-        )
-        .with_bundle(TransformBundle::new())
-        .with_setup(|world| {
-            world.insert(AssetStorage::<Source>::default());
-            let mut progress = ProgressCounter::default();
-            initialise_audio(world, &mut progress);
-        })
-        .with_assertion(|world| {
-            world.read_resource::<Music>();
-            world.read_resource::<Sounds>();
-        })
-        .run();
+        let test_result = IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_assertion(|world| {
+                world.read_resource::<Music>();
+                world.read_resource::<Sounds>();
+            })
+            .run();
         assert!(test_result.is_ok());
     }
 }

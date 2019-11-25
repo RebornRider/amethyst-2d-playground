@@ -8,7 +8,6 @@ use std::collections::VecDeque;
 enum MockEventStep {
     EventStep(Box<dyn Fn(&mut World)>),
     WaitStep(f32),
-    EndTest,
 }
 
 pub struct SendMockEvents {
@@ -79,7 +78,6 @@ impl State<CustomGameData<'static, 'static>, GameStateEvent> for SendMockEvents 
                     MockEventStep::WaitStep(wait_time) => {
                         self.next_step_timer = Some(wait_time);
                     }
-                    _ => {}
                 }
             }
         }

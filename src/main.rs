@@ -6,7 +6,6 @@ mod test_harness;
 
 use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 use amethyst::{
-    assets::HotReloadBundle,
     audio::{AudioBundle, DjSystemDesc},
     core::{
         ecs::{Read, SystemData, World},
@@ -134,7 +133,6 @@ fn build_game_data(
     };
     let builder = builder
         .with_base_bundle(TransformBundle::new())
-        .with_base_bundle(HotReloadBundle::default())
         .with_base_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)
         .with_base_bundle(FpsCounterBundle::default())
         .with_base(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
@@ -148,14 +146,6 @@ fn build_game_data(
             .with_plugin(RenderUi::default()),
         );
     Ok(builder)
-}
-
-fn quit_during_tests() -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-    if cfg!(test) {
-        Trans::Quit
-    } else {
-        Trans::None
-    }
 }
 
 pub struct Ball {
