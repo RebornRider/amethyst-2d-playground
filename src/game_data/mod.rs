@@ -41,7 +41,7 @@ impl<'a, 'b> CustomGameData<'a, 'b> {
 // Implement for built-in Amethyst `GameData`
 impl GameUpdate for CustomGameData<'_, '_> {
     fn update(&mut self, world: &World) {
-        CustomGameData::update(self, world, true);
+        CustomGameData::update(self, world, false);
     }
 }
 

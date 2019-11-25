@@ -98,6 +98,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
                     Trans::None
                 }
             }
+            GameStateEvent::Test(test_event) => crate::test_harness::handle_test_event(&test_event),
             _ => Trans::None,
         }
     }

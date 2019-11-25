@@ -279,7 +279,7 @@ impl IntegrationTestApplication {
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
+        let (_, _, assets_dir) = initialize_paths()?;
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
         {
             let world = &mut application_builder.world;

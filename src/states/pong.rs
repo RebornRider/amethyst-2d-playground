@@ -101,6 +101,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a
                     Trans::None
                 }
             }
+            GameStateEvent::Test(test_event) => crate::test_harness::handle_test_event(&test_event),
             _ => Trans::None,
         }
     }
@@ -357,6 +358,8 @@ mod tests {
     use crate::{audio::initialise_audio, test_harness::SendMockEvents};
     use amethyst::{
         assets::ProgressCounter,
+        core::shrev::EventChannel,
+        ecs::prelude::*,
         ui::{UiEvent, UiEventType},
         winit,
         winit::*,
@@ -384,12 +387,16 @@ mod tests {
                 initialise_audio(world, &mut progress);
             })
             .with_state(|| {
-                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-                    Event::WindowEvent {
-                        window_id: WindowId::dummy(),
-                        event: WindowEvent::CloseRequested,
-                    }
-                })
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
             })
             .run();
         assert!(test_result.is_ok());
@@ -404,20 +411,24 @@ mod tests {
                 initialise_audio(world, &mut progress);
             })
             .with_state(|| {
-                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-                    Event::WindowEvent {
-                        window_id: WindowId::dummy(),
-                        event: WindowEvent::KeyboardInput {
-                            device_id: DeviceId::dummy(),
-                            input: KeyboardInput {
-                                scancode: 0,
-                                state: ElementState::Pressed,
-                                virtual_keycode: Some(VirtualKeyCode::Escape),
-                                modifiers: winit::ModifiersState::default(),
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: winit::ModifiersState::default(),
+                                },
                             },
-                        },
-                    }
-                })
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
             })
             .run();
         assert!(test_result.is_ok());
@@ -432,12 +443,16 @@ mod tests {
                 initialise_audio(world, &mut progress);
             })
             .with_state(|| {
-                SendMockEvents::test_state(|_world| Box::new(Pong::default())).with_event(|_world| unsafe {
-                    Event::WindowEvent {
-                        window_id: WindowId::dummy(),
-                        event: WindowEvent::HoveredFileCancelled,
-                    }
-                })
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
             })
             .run();
         assert!(test_result.is_ok());
@@ -453,7 +468,12 @@ mod tests {
             })
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(Pong::default()))
-                    .with_event(|world| UiEvent::new(UiEventType::ValueChange, world.create_entity().build()))
+                    .with_step(|world| {
+                        let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
             })
             .run();
         assert!(test_result.is_ok());
