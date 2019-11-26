@@ -124,7 +124,14 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_harness::SendMockEvents;
+    use crate::test_harness::{ConditionBarrierResult, SendMockEvents};
+    use amethyst::{
+        core::{ecs::prelude::*, shrev::EventChannel},
+        input::{InputEvent, StringBindings},
+        ui::{UiEvent, UiEventType},
+        winit::*,
+    };
+    use std::time::Duration;
 
     #[test]
     fn test_pause_menu_state() {
@@ -132,6 +139,118 @@ mod tests {
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_state(|| {
                 SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_exit_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut exit_button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                exit_button = ui_finder.find(EXIT_BUTTON_ID);
+                            });
+                            if exit_button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut exit_button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            exit_button = ui_finder.find(EXIT_BUTTON_ID);
+                        });
+                        let event = UiEvent::new(UiEventType::Click, exit_button.expect("Could not find exit button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_exit_to_main_menu_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut exit_to_main_menu_button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                exit_to_main_menu_button = ui_finder.find(EXIT_TO_MAIN_MENU_BUTTON_ID);
+                            });
+                            if exit_to_main_menu_button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut exit_to_main_menu_button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            exit_to_main_menu_button = ui_finder.find(EXIT_TO_MAIN_MENU_BUTTON_ID);
+                        });
+                        let event = UiEvent::new(
+                            UiEventType::Click,
+                            exit_to_main_menu_button.expect("Could not find exit to main menu button"),
+                        );
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_resume_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut resume_button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                resume_button = ui_finder.find(RESUME_BUTTON_ID);
+                            });
+                            if resume_button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut resume_button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            resume_button = ui_finder.find(RESUME_BUTTON_ID);
+                        });
+                        let event =
+                            UiEvent::new(UiEventType::Click, resume_button.expect("Could not find resume button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
                     .with_wait(1.0)
                     .end_test()
             })

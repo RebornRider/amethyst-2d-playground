@@ -4,7 +4,7 @@ mod send_mock_events;
 
 pub use self::{
     integration_test_application::IntegrationTestApplication, raw_file_loader_source::RawFileLoaderSource,
-    send_mock_events::SendMockEvents,
+    send_mock_events::ConditionBarrierResult, send_mock_events::SendMockEvents,
 };
 use crate::{game_data::CustomGameData, GameStateEvent};
 
