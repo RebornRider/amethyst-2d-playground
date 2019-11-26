@@ -1,7 +1,5 @@
 environment:
   matrix:
-    - TARGET: i686-pc-windows-gnu
-      CHANNEL: stable
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
     - TARGET: x86_64-pc-windows-gnu
@@ -28,5 +26,4 @@ test_script:
   - cargo test --verbose --all
 
 cache:
-  - target
   - C:\Users\appveyor\.cargo\registry
