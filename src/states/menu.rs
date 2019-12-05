@@ -156,6 +156,154 @@ mod tests {
     }
 
     #[test]
+    fn click_start_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                button = ui_finder.find(BUTTON_START);
+                            });
+                            if button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            button = ui_finder.find(BUTTON_START);
+                        });
+                        let event = UiEvent::new(UiEventType::Click, button.expect("Could not find start button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_load_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                button = ui_finder.find(BUTTON_LOAD);
+                            });
+                            if button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            button = ui_finder.find(BUTTON_LOAD);
+                        });
+                        let event = UiEvent::new(UiEventType::Click, button.expect("Could not find load button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_options_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                button = ui_finder.find(BUTTON_OPTIONS);
+                            });
+                            if button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            button = ui_finder.find(BUTTON_OPTIONS);
+                        });
+                        let event = UiEvent::new(UiEventType::Click, button.expect("Could not find options button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn click_credits_button() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_condition_barrier(
+                        |world| {
+                            let mut button: Option<Entity> = None;
+                            world.exec(|ui_finder: UiFinder<'_>| {
+                                button = ui_finder.find(BUTTON_CREDITS);
+                            });
+                            if button.is_some() {
+                                ConditionBarrierResult::ResumeImmediately
+                            } else {
+                                ConditionBarrierResult::ContinueEvaluating
+                            }
+                        },
+                        Duration::from_secs(20),
+                    )
+                    .with_step(|world| {
+                        let mut button: Option<Entity> = None;
+                        world.exec(|ui_finder: UiFinder<'_>| {
+                            button = ui_finder.find(BUTTON_CREDITS);
+                        });
+                        let event = UiEvent::new(UiEventType::Click, button.expect("Could not find credits button"));
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
     fn is_close_requested() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()

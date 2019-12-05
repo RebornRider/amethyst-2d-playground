@@ -341,26 +341,26 @@ mod tests {
             })
             .run();
         assert!(test_result.is_ok());
+    }
 
-        #[test]
-        fn unhandled_ui_event() {
-            amethyst::start_logger(amethyst::LoggerConfig::default());
-            let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
-                .with_setup(|world| {
-                    let mut progress = ProgressCounter::default();
-                    initialise_audio(world, &mut progress);
-                })
-                .with_state(|| {
-                    SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
-                        .with_step(|world| {
-                            let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
-                            let mut events: Write<EventChannel<UiEvent>> = world.system_data();
-                            events.single_write(event);
-                        })
-                        .end_test()
-                })
-                .run();
-            assert!(test_result.is_ok());
-        }
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| {
+                        let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
     }
 }
