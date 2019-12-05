@@ -45,13 +45,11 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
         if let Some(entity) = self.ui_root {
             delete_hierarchy(entity, data.world).expect("Failed to remove MainMenu");
         }
+
         if let Some(progress) = &self.load_progress {
             if progress.complete() == Completion::Failed {
                 progress.errors().iter().enumerate().for_each(|(n, e)| {
                     eprintln!("{}: error: {}", n, e.error);
-                    for cause in e.error.causes().skip(1) {
-                        eprintln!("{}: caused by: {}", n, cause);
-                    }
                 });
             }
         }
@@ -61,6 +59,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
         self.button_load = None;
         self.button_options = None;
         self.button_credits = None;
+        self.load_progress = None;
     }
 
     fn handle_event(
@@ -124,23 +123,135 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
             });
         }
 
-        if cfg!(test) {
-            Trans::Quit
-        } else {
-            Trans::None
-        }
+        Trans::None
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::audio::initialise_audio;
+    use crate::test_harness::{ConditionBarrierResult, SendMockEvents};
+    use amethyst::{
+        assets::ProgressCounter,
+        core::shrev::EventChannel,
+        ecs::prelude::*,
+        ui::{UiEvent, UiEventType},
+        winit,
+        winit::*,
+    };
+    use std::time::Duration;
 
     #[test]
     fn test_main_menu_state() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
-            .with_state(MainMenu::default)
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: winit::ModifiersState::default(),
+                                },
+                            },
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(MainMenu::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(Pong::default()))
+                    .with_step(|world| {
+                        let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
             .run();
         assert!(test_result.is_ok());
     }

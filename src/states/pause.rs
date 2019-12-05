@@ -83,8 +83,10 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
                     // this allows us to first 'Pop' this state, and then exchange whatever was
                     // below that with a new MainMenu state.
                     state_transition_event_channel.single_write(Box::new(|| Trans::Pop));
-                    state_transition_event_channel
-                        .single_write(Box::new(|| Trans::Switch(Box::new(MainMenu::default()))));
+                    if cfg!(not(test)) {
+                        state_transition_event_channel
+                            .single_write(Box::new(|| Trans::Switch(Box::new(MainMenu::default()))));
+                    }
 
                     log::info!("[Trans::Pop] Closing Pause Menu!");
                     log::info!("[Trans::Switch] Switching to MainMenu!");
@@ -124,11 +126,14 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::audio::initialise_audio;
     use crate::test_harness::{ConditionBarrierResult, SendMockEvents};
     use amethyst::{
-        core::{ecs::prelude::*, shrev::EventChannel},
-        input::{InputEvent, StringBindings},
+        assets::ProgressCounter,
+        core::shrev::EventChannel,
+        ecs::prelude::*,
         ui::{UiEvent, UiEventType},
+        winit,
         winit::*,
     };
     use std::time::Duration;
@@ -256,5 +261,106 @@ mod tests {
             })
             .run();
         assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: winit::ModifiersState::default(),
+                                },
+                            },
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+
+        #[test]
+        fn unhandled_ui_event() {
+            amethyst::start_logger(amethyst::LoggerConfig::default());
+            let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+                .with_setup(|world| {
+                    let mut progress = ProgressCounter::default();
+                    initialise_audio(world, &mut progress);
+                })
+                .with_state(|| {
+                    SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                        .with_step(|world| {
+                            let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
+                            let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                            events.single_write(event);
+                        })
+                        .end_test()
+                })
+                .run();
+            assert!(test_result.is_ok());
+        }
     }
 }
