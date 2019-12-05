@@ -7,9 +7,9 @@ use crate::{
     Ball, GameStateEvent, GameStateEventReader, Paddle,
 };
 use amethyst::{
-    assets::{AssetStorage, HotReloadBundle},
+    assets::AssetStorage,
     audio::Source,
-    core::{transform::*, RunNowDesc, SystemBundle, SystemDesc},
+    core::{shrev::EventChannel, transform::*, RunNowDesc, SystemBundle, SystemDesc},
     ecs::prelude::*,
     error::Error,
     input::{BindingTypes, InputBundle, StringBindings},
@@ -189,9 +189,9 @@ impl IntegrationTestApplication {
     /// Returns an application with the base systems to tes hte pong game
     #[allow(dead_code)]
     pub fn pong_base() -> Self {
+        use amethyst::assets::Loader;
         Self::blank()
             .with_bundle(TransformBundle::new())
-            .with_bundle(HotReloadBundle::default())
             .with_bundle(InputBundle::<StringBindings>::new())
             .with_bundle(FpsCounterBundle::default())
             .with_bundle(UiBundle::<StringBindings>::new())
@@ -201,6 +201,7 @@ impl IntegrationTestApplication {
             .with_resource(AssetStorage::<SpriteSheet>::default())
             .with_resource(AssetStorage::<FontAsset>::default())
             .with_resource(GameplayState::Paused)
+            .with_resource(EventChannel::<crate::TestEvent>::with_capacity(8))
             .with_setup(|world| {
                 world.register::<Transform>();
                 world.register::<Parent>();
@@ -210,6 +211,10 @@ impl IntegrationTestApplication {
                 world.register::<Camera>();
                 world.register::<UiTransform>();
                 world.register::<UiText>();
+
+                let load_source = crate::test_harness::RawFileLoaderSource::default();
+                let mut loader = world.write_resource::<Loader>();
+                loader.set_default_source(load_source);
             })
     }
 
@@ -279,7 +284,7 @@ impl IntegrationTestApplication {
     where
         S: State<CustomGameData<'static, 'static>, GameStateEvent> + 'static,
     {
-        let (display_config_path, key_bindings_path, assets_dir) = initialize_paths()?;
+        let (_, _, assets_dir) = initialize_paths()?;
         let mut application_builder = CoreApplication::build(assets_dir, first_state)?;
         {
             let world = &mut application_builder.world;

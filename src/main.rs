@@ -6,7 +6,6 @@ mod test_harness;
 
 use crate::{audio::Music, systems::UiEventHandlerSystemDesc};
 use amethyst::{
-    assets::HotReloadBundle,
     audio::{AudioBundle, DjSystemDesc},
     core::{
         ecs::{Read, SystemData, World},
@@ -32,6 +31,7 @@ use amethyst::{
 use derivative::Derivative;
 extern crate dunce;
 use crate::game_data::{CustomGameData, CustomGameDataBuilder};
+use sentry::integrations::panic::register_panic_handler;
 use std::{path, time::Duration};
 
 const ARENA_HEIGHT: f32 = 90.0;
@@ -53,6 +53,12 @@ const AUDIO_SCORE: &str = "audio/score.ogg";
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(amethyst::LoggerConfig::default());
+
+    let sentry = sentry::init(sentry::ClientOptions::default());
+    if sentry.is_enabled() {
+        register_panic_handler();
+    }
+
     let mut game = build_game()?;
     game.run();
     Ok(())
@@ -127,7 +133,6 @@ fn build_game_data(
     };
     let builder = builder
         .with_base_bundle(TransformBundle::new())
-        .with_base_bundle(HotReloadBundle::default())
         .with_base_bundle(InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?)
         .with_base_bundle(FpsCounterBundle::default())
         .with_base(UiEventHandlerSystemDesc::default(), "ui_event_handler", &[])
@@ -141,14 +146,6 @@ fn build_game_data(
             .with_plugin(RenderUi::default()),
         );
     Ok(builder)
-}
-
-fn quit_during_tests() -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-    if cfg!(test) {
-        Trans::Quit
-    } else {
-        Trans::None
-    }
 }
 
 pub struct Ball {

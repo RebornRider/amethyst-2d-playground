@@ -1,5 +1,5 @@
 use amethyst::{
-    assets::{AssetStorage, Loader},
+    assets::{AssetStorage, Loader, ProgressCounter},
     audio::{output::Output, OggFormat, Source, SourceHandle},
     ecs::{World, WorldExt},
 };
@@ -16,13 +16,13 @@ pub struct Music {
 }
 
 /// Loads an ogg audio track.
-pub fn load_audio_track(loader: &Loader, world: &World, file: &str) -> SourceHandle {
-    loader.load(file, OggFormat, (), &world.read_resource())
+pub fn load_audio_track(loader: &Loader, world: &World, file: &str, progress: &mut ProgressCounter) -> SourceHandle {
+    loader.load(file, OggFormat, progress, &world.read_resource())
 }
 
 /// Initialise audio in the world. This includes the background track and the
 /// sound effects.
-pub fn initialise_audio(world: &mut World) {
+pub fn initialise_audio(world: &mut World, progress: &mut ProgressCounter) {
     use crate::{AUDIO_BOUNCE, AUDIO_MUSIC, AUDIO_SCORE};
 
     let (sound_effects, music) = {
@@ -30,15 +30,15 @@ pub fn initialise_audio(world: &mut World) {
 
         let music = AUDIO_MUSIC
             .iter()
-            .map(|file| load_audio_track(&loader, world, file))
+            .map(|file| load_audio_track(&loader, world, file, progress))
             .collect::<Vec<_>>()
             .into_iter()
             .cycle();
         let music = Music { music };
 
         let sound = Sounds {
-            bounce_sfx: load_audio_track(&loader, world, AUDIO_BOUNCE),
-            score_sfx: load_audio_track(&loader, world, AUDIO_SCORE),
+            bounce_sfx: load_audio_track(&loader, world, AUDIO_BOUNCE, progress),
+            score_sfx: load_audio_track(&loader, world, AUDIO_SCORE, progress),
         };
 
         (sound, music)
@@ -72,26 +72,21 @@ pub fn play_bounce(sounds: &Sounds, storage: &AssetStorage<Source>, output: Opti
 mod tests {
     use super::*;
 
-    use crate::{GameStateEvent, GameStateEventReader};
-    use amethyst::core::transform::TransformBundle;
-    use amethyst_test::AmethystApplication;
+    use crate::test_harness::IntegrationTestApplication;
 
     #[test]
     fn test_initialise_audio() {
         amethyst::start_logger(amethyst::LoggerConfig::default());
-        let test_result = AmethystApplication::with_custom_event_type::<GameStateEvent, GameStateEventReader>(
-            AmethystApplication::blank(),
-        )
-        .with_bundle(TransformBundle::new())
-        .with_setup(|world| {
-            world.insert(AssetStorage::<Source>::default());
-            initialise_audio(world);
-        })
-        .with_assertion(|world| {
-            world.read_resource::<Music>();
-            world.read_resource::<Sounds>();
-        })
-        .run();
+        let test_result = IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_assertion(|world| {
+                world.read_resource::<Music>();
+                world.read_resource::<Sounds>();
+            })
+            .run();
         assert!(test_result.is_ok());
     }
 }

@@ -1,37 +1,43 @@
+use crate::{
+    game_data::CustomGameData,
+    states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen},
+    GameStateEvent,
+};
 use amethyst::{
+    assets::{Completion, ProgressCounter},
     ecs::prelude::Entity,
     input::{is_close_requested, is_key_down},
     prelude::*,
     ui::{UiCreator, UiEvent, UiEventType, UiFinder},
     winit::VirtualKeyCode,
 };
-
-use crate::{
-    game_data::CustomGameData,
-    states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen},
-    GameStateEvent,
-};
+use derivative::Derivative;
 
 const BUTTON_START: &str = "start";
 const BUTTON_LOAD: &str = "load";
 const BUTTON_OPTIONS: &str = "options";
 const BUTTON_CREDITS: &str = "credits";
 
-#[derive(Default, Debug)]
+#[derive(Derivative)]
+#[derivative(Debug)]
+#[derivative(Default)]
 pub struct MainMenu {
     ui_root: Option<Entity>,
     button_start: Option<Entity>,
     button_load: Option<Entity>,
     button_options: Option<Entity>,
     button_credits: Option<Entity>,
+    #[derivative(Debug = "ignore")]
+    load_progress: Option<ProgressCounter>,
 }
 
 impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMenu {
     fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         // create UI from prefab and save the reference.
         let world = data.world;
-
-        self.ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/menu.ron", ())));
+        let mut progress = ProgressCounter::default();
+        self.ui_root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/menu.ron", &mut progress)));
+        self.load_progress = Some(progress);
     }
 
     fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
@@ -39,6 +45,17 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
         if let Some(entity) = self.ui_root {
             delete_hierarchy(entity, data.world).expect("Failed to remove MainMenu");
         }
+        if let Some(progress) = &self.load_progress {
+            if progress.complete() == Completion::Failed {
+                progress.errors().iter().enumerate().for_each(|(n, e)| {
+                    eprintln!("{}: error: {}", n, e.error);
+                    for cause in e.error.causes().skip(1) {
+                        eprintln!("{}: caused by: {}", n, cause);
+                    }
+                });
+            }
+        }
+
         self.ui_root = None;
         self.button_start = None;
         self.button_load = None;
@@ -81,6 +98,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for MainMen
 
                 Trans::None
             }
+            GameStateEvent::Test(test_event) => crate::test_harness::handle_test_event(&test_event),
             _ => Trans::None,
         }
     }

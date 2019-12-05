@@ -87,6 +87,7 @@ mod tests {
     };
     use amethyst::{
         assets::AssetStorage,
+        assets::ProgressCounter,
         core::Parent,
         ecs::prelude::WorldExt,
         prelude::Builder,
@@ -115,7 +116,8 @@ mod tests {
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
                 world.insert(AssetStorage::<Source>::default());
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
 
                 let tex_storage = AssetStorage::<Texture>::default();
                 let ss_storage = AssetStorage::<SpriteSheet>::default();
@@ -158,7 +160,8 @@ mod tests {
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
                 world.insert(AssetStorage::<Source>::default());
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
 
                 let tex_storage = AssetStorage::<Texture>::default();
                 let ss_storage = AssetStorage::<SpriteSheet>::default();
@@ -209,18 +212,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                world.insert(AssetStorage::<Source>::default());
-                initialise_audio(world);
-
-                let tex_storage = AssetStorage::<Texture>::default();
-                let ss_storage = AssetStorage::<SpriteSheet>::default();
-                world.insert(tex_storage);
-                world.insert(ss_storage);
-                world.register::<Transform>();
-                world.register::<Parent>();
-                world.register::<SpriteRender>();
-                world.register::<Paddle>();
-                world.register::<Ball>();
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
 
                 // Initialize paddles and ball
                 let root_entity = Some(world.create_entity().with(Transform::default()).build());
@@ -261,7 +254,8 @@ mod tests {
         amethyst::start_logger(amethyst::LoggerConfig::default());
         let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
             .with_setup(|world| {
-                initialise_audio(world);
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
 
                 // Initialize paddles and ball
                 let root_entity = Some(world.create_entity().with(Transform::default()).build());
