@@ -4,26 +4,36 @@ use crate::{
     GameStateEvent,
 };
 use amethyst::{
+    assets::ProgressCounter,
     ecs::prelude::Entity,
     input::{is_close_requested, is_key_down, is_mouse_button_down},
     prelude::*,
     ui::UiCreator,
     winit::{MouseButton, VirtualKeyCode},
 };
+use derivative::Derivative;
 
 // A simple 'Screen' State, only capable of loading/showing the prefab ui and registering simple
 // UI interactions (pressing escape or clicking anywhere).
 
-#[derive(Debug, Default)]
+#[derive(Derivative)]
+#[derivative(Debug)]
+#[derivative(Default)]
 pub struct CreditsScreen {
     ui_handle: Option<Entity>,
+    #[derivative(Debug = "ignore")]
+    load_progress: Option<ProgressCounter>,
 }
 
 impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for CreditsScreen {
     fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         let world = data.world;
 
-        self.ui_handle = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/credits.ron", ())));
+        let mut progress = ProgressCounter::default();
+
+        self.ui_handle = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/credits.ron", &mut progress)));
+
+        self.load_progress = Some(progress);
     }
 
     fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
@@ -31,6 +41,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
             delete_hierarchy(handler, data.world).expect("Failed to remove CreditScreen");
         }
         self.ui_handle = None;
+        self.load_progress = None;
     }
 
     fn handle_event(

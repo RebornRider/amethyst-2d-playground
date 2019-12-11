@@ -6,12 +6,14 @@ use amethyst::{
 use std::collections::VecDeque;
 use std::time::Duration;
 
+#[allow(dead_code)]
 pub enum ConditionBarrierResult {
     ResumeImmediately,
     ResumeAfterWait(f32),
     ContinueEvaluating,
 }
 
+#[allow(dead_code)]
 enum MockEventStep {
     EventStep(Box<dyn Fn(&mut World)>),
     ConditionBarrier(Box<dyn Fn(&mut World) -> ConditionBarrierResult>, Duration),
@@ -27,6 +29,7 @@ pub struct SendMockEvents {
     condition_barrier_timeout: Duration,
 }
 
+#[allow(dead_code)]
 impl SendMockEvents {
     pub fn test_state<FnT>(next_state: FnT) -> Self
     where
@@ -78,6 +81,7 @@ impl SendMockEvents {
     }
 }
 
+#[allow(dead_code)]
 impl State<CustomGameData<'static, 'static>, GameStateEvent> for SendMockEvents {
     fn handle_event(
         &mut self,
@@ -140,6 +144,7 @@ impl State<CustomGameData<'static, 'static>, GameStateEvent> for SendMockEvents 
                         self.current_condition_barrier = Some(condition_barrier);
                     }
                 }
+            } else {
             }
         }
     }

@@ -1,3 +1,5 @@
+#![allow(clippy::use_self)]
+
 use crate::{
     game_data::CustomGameData,
     states::{util::delete_hierarchy, CreditsScreen, Pong, WelcomeScreen},

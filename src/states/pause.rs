@@ -1,5 +1,6 @@
 use crate::{game_data::CustomGameData, states::MainMenu, GameStateEvent};
 use amethyst::{
+    assets::ProgressCounter,
     ecs::Entity,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -21,6 +22,7 @@ pub struct PauseMenuState {
     exit_button: Option<Entity>,
     /// ui hierarchy root entity
     root: Option<Entity>,
+    load_progress: Option<ProgressCounter>,
 }
 
 /// resume button prefab ID
@@ -38,7 +40,11 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
     fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         let world = data.world;
 
-        self.root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/pause_menu.ron", ())));
+        let mut progress = ProgressCounter::default();
+
+        self.root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/pause_menu.ron", &mut progress)));
+
+        self.load_progress = Some(progress);
     }
 
     fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
@@ -49,6 +55,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
         }
         self.resume_button = None;
         self.exit_to_main_menu_button = None;
+        self.load_progress = None;
     }
 
     fn handle_event(
