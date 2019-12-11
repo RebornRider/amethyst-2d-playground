@@ -1,1 +1,2 @@
 clippy::bool_comparison
+clippy::default_trait_access

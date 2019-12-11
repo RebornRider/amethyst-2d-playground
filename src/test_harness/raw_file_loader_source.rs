@@ -9,7 +9,7 @@ impl amethyst::assets::Source for RawFileLoaderSource {
         use crate::initialize_paths;
         use std::{fs::File, io::Read};
 
-        let (_, _, asset_dir) = initialize_paths().expect("Could noinitialize paths");
+        let (_, _, asset_dir) = initialize_paths().expect("Could not initialize paths");
         let path = asset_dir.join(path);
 
         let content = {

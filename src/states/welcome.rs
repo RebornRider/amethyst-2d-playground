@@ -42,14 +42,14 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
             delete_hierarchy(handler, data.world).expect("Failed to remove WelcomeScreen");
         }
         self.ui_handle = None;
+        self.load_progress = None;
     }
 
     fn handle_event(
         &mut self,
-        data: StateData<'_, CustomGameData<'_, '_>>,
+        _data: StateData<'_, CustomGameData<'_, '_>>,
         event: GameStateEvent,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(data.world, true);
         match event {
             GameStateEvent::Window(event) => {
                 if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
@@ -81,7 +81,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Welcome
         &mut self,
         data: StateData<'_, CustomGameData<'_, '_>>,
     ) -> Trans<CustomGameData<'static, 'static>, GameStateEvent> {
-        data.data.update(data.world, true);
+        data.data.update(data.world, false);
         Trans::None
     }
 }

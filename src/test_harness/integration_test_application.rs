@@ -1,3 +1,4 @@
+#![allow(clippy::use_self)]
 use std::{any::Any, marker::PhantomData, panic, sync::Mutex};
 
 use crate::{

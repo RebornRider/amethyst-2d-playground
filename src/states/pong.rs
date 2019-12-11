@@ -6,7 +6,7 @@ use crate::{
     Ball, GameStateEvent, Paddle, Side, ARENA_HEIGHT, ARENA_WIDTH,
 };
 use amethyst::{
-    assets::{AssetStorage, Handle, Loader},
+    assets::{AssetStorage, Handle, Loader, ProgressCounter},
     core::{timing::Time, transform::Transform, Parent},
     ecs::{
         prelude::{Entity, World, WorldExt},
@@ -26,6 +26,7 @@ pub struct Pong<'a, 'b> {
     dispatcher: Option<Dispatcher<'a, 'b>>,
     root_entity: Option<Entity>,
     ui_root: Option<Entity>,
+    load_progress: Option<ProgressCounter>,
 }
 
 impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a, 'b> {
@@ -37,11 +38,13 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a
         // Wait one second before spawning the ball.
         self.ball_spawn_timer.replace(1.0);
 
+        let mut progress = ProgressCounter::default();
+
         // Initialize roots
         self.root_entity = Some(data.world.create_entity().with(Transform::default()).build());
         self.ui_root = Some(
             data.world
-                .exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", ())),
+                .exec(|mut creator: UiCreator<'_>| creator.create("ui/hud.ron", &mut progress)),
         );
 
         // Load the spritesheet necessary to render the graphics.
@@ -57,6 +60,8 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a
         if let Some(ui_root) = self.ui_root {
             initialise_score(data.world, ui_root);
         }
+
+        self.load_progress = Some(progress);
     }
 
     fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
@@ -74,6 +79,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Pong<'a
 
         self.sprite_sheet_handle = None;
         self.ball_spawn_timer = None;
+        self.load_progress = None;
     }
 
     fn on_pause(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {

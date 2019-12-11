@@ -1,5 +1,6 @@
 use crate::{game_data::CustomGameData, states::MainMenu, GameStateEvent};
 use amethyst::{
+    assets::ProgressCounter,
     ecs::Entity,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -21,6 +22,7 @@ pub struct PauseMenuState {
     exit_button: Option<Entity>,
     /// ui hierarchy root entity
     root: Option<Entity>,
+    load_progress: Option<ProgressCounter>,
 }
 
 /// resume button prefab ID
@@ -38,7 +40,11 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
     fn on_start(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
         let world = data.world;
 
-        self.root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/pause_menu.ron", ())));
+        let mut progress = ProgressCounter::default();
+
+        self.root = Some(world.exec(|mut creator: UiCreator<'_>| creator.create("ui/pause_menu.ron", &mut progress)));
+
+        self.load_progress = Some(progress);
     }
 
     fn on_stop(&mut self, data: StateData<'_, CustomGameData<'_, '_>>) {
@@ -49,6 +55,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
         }
         self.resume_button = None;
         self.exit_to_main_menu_button = None;
+        self.load_progress = None;
     }
 
     fn handle_event(
@@ -83,8 +90,10 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
                     // this allows us to first 'Pop' this state, and then exchange whatever was
                     // below that with a new MainMenu state.
                     state_transition_event_channel.single_write(Box::new(|| Trans::Pop));
-                    state_transition_event_channel
-                        .single_write(Box::new(|| Trans::Switch(Box::new(MainMenu::default()))));
+                    if cfg!(not(test)) {
+                        state_transition_event_channel
+                            .single_write(Box::new(|| Trans::Switch(Box::new(MainMenu::default()))));
+                    }
 
                     log::info!("[Trans::Pop] Closing Pause Menu!");
                     log::info!("[Trans::Switch] Switching to MainMenu!");
@@ -124,11 +133,14 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for PauseMe
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::audio::initialise_audio;
     use crate::test_harness::{ConditionBarrierResult, SendMockEvents};
     use amethyst::{
-        core::{ecs::prelude::*, shrev::EventChannel},
-        input::{InputEvent, StringBindings},
+        assets::ProgressCounter,
+        core::shrev::EventChannel,
+        ecs::prelude::*,
         ui::{UiEvent, UiEventType},
+        winit,
         winit::*,
     };
     use std::time::Duration;
@@ -252,6 +264,107 @@ mod tests {
                         events.single_write(event);
                     })
                     .with_wait(1.0)
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn is_close_requested() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::CloseRequested,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn escape_key() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::KeyboardInput {
+                                device_id: DeviceId::dummy(),
+                                input: KeyboardInput {
+                                    scancode: 0,
+                                    state: ElementState::Pressed,
+                                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                                    modifiers: winit::ModifiersState::default(),
+                                },
+                            },
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_window_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| unsafe {
+                        let event = Event::WindowEvent {
+                            window_id: WindowId::dummy(),
+                            event: WindowEvent::HoveredFileCancelled,
+                        };
+                        let mut events: Write<EventChannel<Event>> = world.system_data();
+                        events.single_write(event);
+                    })
+                    .end_test()
+            })
+            .run();
+        assert!(test_result.is_ok());
+    }
+
+    #[test]
+    fn unhandled_ui_event() {
+        amethyst::start_logger(amethyst::LoggerConfig::default());
+        let test_result = crate::test_harness::IntegrationTestApplication::pong_base()
+            .with_setup(|world| {
+                let mut progress = ProgressCounter::default();
+                initialise_audio(world, &mut progress);
+            })
+            .with_state(|| {
+                SendMockEvents::test_state(|_world| Box::new(PauseMenuState::default()))
+                    .with_step(|world| {
+                        let event = UiEvent::new(UiEventType::ValueChange, world.create_entity().build());
+                        let mut events: Write<EventChannel<UiEvent>> = world.system_data();
+                        events.single_write(event);
+                    })
                     .end_test()
             })
             .run();

@@ -38,7 +38,6 @@ clippy::crosspointer_transmute
 clippy::dbg_macro
 clippy::decimal_literal_representation
 clippy::declare_interior_mutable_const
-clippy::default_trait_access
 clippy::deprecated_cfg_attr
 clippy::deprecated_semver
 clippy::deref_addrof
