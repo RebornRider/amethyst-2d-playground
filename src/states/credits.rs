@@ -69,7 +69,7 @@ impl<'a, 'b> State<CustomGameData<'static, 'static>, GameStateEvent> for Credits
 mod tests {
     use super::*;
     use crate::audio::initialise_audio;
-    use crate::test_harness::{ConditionBarrierResult, SendMockEvents};
+    use crate::test_harness::SendMockEvents;
     use amethyst::{
         assets::ProgressCounter,
         core::shrev::EventChannel,
@@ -78,7 +78,6 @@ mod tests {
         winit,
         winit::*,
     };
-    use std::time::Duration;
 
     #[test]
     fn test_credits_state() {

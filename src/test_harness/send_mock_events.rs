@@ -126,20 +126,18 @@ impl State<CustomGameData<'static, 'static>, GameStateEvent> for SendMockEvents 
                         }
                     }
                 }
-            } else {
-                if let Some(step) = self.mock_events.pop_front() {
-                    match *step {
-                        MockEventStep::EventStep(mock_event) => {
-                            (mock_event)(data.world);
-                        }
-                        MockEventStep::WaitStep(wait_time) => {
-                            self.next_step_timer = Some(wait_time);
-                        }
-                        MockEventStep::ConditionBarrier(condition_barrier, timeout) => {
-                            self.condition_barrier_timeout = timeout;
-                            self.condition_barrier_start_time = absolute_time;
-                            self.current_condition_barrier = Some(condition_barrier);
-                        }
+            } else if let Some(step) = self.mock_events.pop_front() {
+                match *step {
+                    MockEventStep::EventStep(mock_event) => {
+                        (mock_event)(data.world);
+                    }
+                    MockEventStep::WaitStep(wait_time) => {
+                        self.next_step_timer = Some(wait_time);
+                    }
+                    MockEventStep::ConditionBarrier(condition_barrier, timeout) => {
+                        self.condition_barrier_timeout = timeout;
+                        self.condition_barrier_start_time = absolute_time;
+                        self.current_condition_barrier = Some(condition_barrier);
                     }
                 }
             }
