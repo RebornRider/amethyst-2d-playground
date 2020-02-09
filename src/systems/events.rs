@@ -3,7 +3,6 @@ use amethyst::{
     derive::SystemDesc,
     ecs::{
         prelude::{System, SystemData, Write},
-        World,
     },
     shrev::{EventChannel, ReaderId},
     ui::UiEvent,

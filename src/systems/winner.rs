@@ -4,7 +4,7 @@ use amethyst::{
     audio::{output::Output, Source},
     core::{transform::Transform, SystemDesc},
     derive::SystemDesc,
-    ecs::prelude::{Entity, Join, Read, ReadExpect, System, SystemData, World, Write, WriteStorage},
+    ecs::prelude::{Entity, Join, Read, ReadExpect, System, SystemData, Write, WriteStorage},
     ui::UiText,
     utils::fps_counter::FpsCounter,
 };

@@ -141,7 +141,7 @@ fn build_game_data(
             RenderingBundle::<DefaultBackend>::new()
             // The RenderToWindow plugin provides all the scaffolding for opening a window and
             // drawing on it
-            .with_plugin(RenderToWindow::from_config_path(display_config_path).with_clear([0.34, 0.36, 0.52, 1.0]))
+            .with_plugin(RenderToWindow::from_config_path(display_config_path).unwrap().with_clear([0.34, 0.36, 0.52, 1.0]))
             .with_plugin(RenderFlat2D::default())
             .with_plugin(RenderUi::default()),
         );
