@@ -1,5 +1,4 @@
 use amethyst::{
-    core::SystemDesc,
     derive::SystemDesc,
     ecs::{
         prelude::{System, SystemData, Write},

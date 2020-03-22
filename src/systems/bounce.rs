@@ -5,7 +5,7 @@ use crate::{
 use amethyst::{
     assets::AssetStorage,
     audio::{output::Output, Source},
-    core::{transform::Transform, SystemDesc},
+    core::{transform::Transform},
     derive::SystemDesc,
     ecs::prelude::{Join, Read, ReadExpect, ReadStorage, System, SystemData, WriteStorage},
 };
