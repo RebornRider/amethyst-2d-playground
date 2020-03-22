@@ -24,7 +24,6 @@ derive-new = { version = "0" }
 derive_deref = { version = "1" }
 lazy_static = { version = "1" }
 sentry = { version = "0" }
-quote = "<=1.0.2"
 
 [features]
 default = ["vulkan"]
