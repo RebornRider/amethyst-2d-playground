@@ -111,7 +111,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --all-targets --release
+          args: --all-targets --release --features "vulkan"
       - name: Make Build Directory
         run: mkdir build
       - name: Copy Resources to Build Directory

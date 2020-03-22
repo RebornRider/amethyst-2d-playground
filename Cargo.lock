@@ -76,6 +76,7 @@ dependencies = [
  "amethyst_locale",
  "amethyst_network",
  "amethyst_rendy",
+ "amethyst_tiles",
  "amethyst_ui",
  "amethyst_utils",
  "amethyst_window",
@@ -340,6 +341,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "amethyst_tiles"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc38b808a906b1ac6b62e2d862dffccf721289239b41cb96a0b6a7493f53b731"
+dependencies = [
+ "amethyst_assets",
+ "amethyst_core",
+ "amethyst_error",
+ "amethyst_rendy",
+ "amethyst_window",
+ "bitintr",
+ "derivative",
+ "err-derive",
+ "failure",
+ "fnv",
+ "glsl-layout",
+ "hibitset",
+ "lazy_static",
+ "log",
+ "rayon",
+ "serde",
+ "smallvec 0.6.13",
+]
+
+[[package]]
 name = "amethyst_ui"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -569,6 +595,12 @@ name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
+
+[[package]]
+name = "bitintr"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ba5a5c4df8ac8673f22698f443ef1ce3853d7f22d5a15ebf66b9a7553b173dd"
 
 [[package]]
 name = "bitmaps"

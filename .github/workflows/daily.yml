@@ -65,7 +65,7 @@ jobs:
           override: true
           components: rustfmt, clippy
       - name: Cargo Fmt
-        run: source $HOME/.cargo/env && cargo fmt -- --check
+        run: source $HOME/.cargo/env && cargo fmt -- --check --features "metal"
       - name: Install Bash4
         run: |
           brew install bash
@@ -77,11 +77,11 @@ jobs:
           chmod +x run_clippy.sh
           ./run_clippy.sh
       - name: Build debug
-        run: source $HOME/.cargo/env && cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose
+        run: source $HOME/.cargo/env && cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --features "metal"
       - name: Build release
-        run: source $HOME/.cargo/env && cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --release
+        run: source $HOME/.cargo/env && cargo build --package amethyst-starter-2d --bin amethyst-starter-2d --verbose --release --features "metal"
       - name: Run tests
-        run: source $HOME/.cargo/env && cargo test --all --verbose
+        run: source $HOME/.cargo/env && cargo test --all --verbose --features "metal"
   build-on-windows:
     name: Build on Windows
     runs-on: windows-latest
