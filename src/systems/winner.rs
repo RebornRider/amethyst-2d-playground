@@ -2,7 +2,7 @@ use crate::{audio::Sounds, Ball, ScoreBoard};
 use amethyst::{
     assets::AssetStorage,
     audio::{output::Output, Source},
-    core::{transform::Transform},
+    core::transform::Transform,
     derive::SystemDesc,
     ecs::prelude::{Entity, Join, Read, ReadExpect, System, SystemData, Write, WriteStorage},
     ui::UiText,
