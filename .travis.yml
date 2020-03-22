@@ -41,8 +41,14 @@ addons:
 
 script:
   - cargo clean
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cargo build --verbose --all --all-targets --features "metal" ; fi
-  - if [ "$TRAVIS_OS_NAME" != "osx" ]; then cargo build --verbose --all --all-targets; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cargo test --verbose --all --features "metal" ; fi
-  - if [ "$TRAVIS_OS_NAME" != "osx" ]; then cargo test --verbose --all ; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    cargo build --verbose --all --all-targets --features "metal"
+    else
+    cargo build --verbose --all --all-targets;
+    fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+    cargo test --verbose --all --features "metal"
+    else
+    cargo test --verbose --all
+    fi
 
