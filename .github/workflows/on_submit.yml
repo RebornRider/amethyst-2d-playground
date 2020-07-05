@@ -6,6 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - name: Remove old artifacts
+        uses: c-hive/gha-remove-artifacts@master
+        with:
+          age: '1 second'
+          # Optional inputs
+          # skip-tags: true
+          skip-recent: 3
       - name: Install Dependecies
         run: sudo apt install gcc pkg-config openssl libasound2-dev cmake build-essential python3 libfreetype6-dev libexpat1-dev libxcb-composite0-dev libssl-dev libx11-dev
       - name: Install toolchain with clippy and rustfmt
